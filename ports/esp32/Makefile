@@ -192,8 +192,8 @@ SRC_C = \
 	machine_wdt.c \
 	mpthreadport.c \
 	machine_rtc.c \
-	modtest.c \
-	wbtest_ceshi.c \
+	wonderbits.c \
+	wb_module_obj.c \
 	$(SRC_MOD)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\

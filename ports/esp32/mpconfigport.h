@@ -178,7 +178,7 @@ extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
-extern const struct _mp_obj_module_t mp_module_wbtest;    //这个是我们添加的，需要声明一下应用外部的struct
+extern const struct _mp_obj_module_t mp_module_wonderbits;    //这个是我们添加的，需要声明一下应用外部的struct
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_esp), (mp_obj_t)&esp_module }, \
@@ -190,7 +190,7 @@ extern const struct _mp_obj_module_t mp_module_wbtest;    //这个是我们添�
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uhashlib), (mp_obj_t)&mp_module_uhashlib }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_wbtest), (mp_obj_t)&mp_module_wbtest }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_wonderbits), (mp_obj_t)&mp_module_wonderbits }, \
     //这个是我们添加的modtest
 
 #define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \

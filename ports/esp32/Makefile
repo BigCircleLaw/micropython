@@ -193,6 +193,7 @@ SRC_C = \
 	mpthreadport.c \
 	machine_rtc.c \
 	modtest.c \
+	wbtest_ceshi.c \
 	$(SRC_MOD)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\

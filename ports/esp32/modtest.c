@@ -22,11 +22,14 @@ STATIC mp_obj_t modtest_test1(mp_obj_t data)
 //这里使用的宏定义和面的名称不一样，OBJ_1区别
 STATIC const MP_DEFINE_CONST_FUN_OBJ_1(modtest_obj_test1,modtest_test1);
 
+extern const mp_obj_type_t modtest_math_type;
+
 //定义的modtest全局字典，之后我们添加type和function就要添加在这里
 STATIC const mp_rom_map_elem_t modtest_globals_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_wbtest)},   //这个对应python层面的__name__ 属性
     {MP_OBJ_NEW_QSTR(MP_QSTR_test0), MP_ROM_PTR(&modtest_obj_test0)},   //这条是我们添加的，把新建的函数注册进modtest里面去
     {MP_OBJ_NEW_QSTR(MP_QSTR_wb_test1), MP_ROM_PTR(&modtest_obj_test1)},    //把新定义的函数注册进modtest_globals_table
+    {MP_OBJ_NEW_QSTR(MP_QSTR_ceshi), MP_ROM_PTR(&modtest_math_type)}, 
 };
 
 //这个可以认为是把modtest_globals_table注册到 mp_module_modtest.globals里面去

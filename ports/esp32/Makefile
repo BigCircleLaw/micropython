@@ -194,6 +194,7 @@ SRC_C = \
 	machine_rtc.c \
 	wonderbits.c \
 	wb_module_obj.c \
+	wb-lib/sender.c \
 	$(SRC_MOD)
 
 EXTMOD_SRC_C = $(addprefix extmod/,\

@@ -45,3 +45,10 @@ unsigned short CRC16Bit(const unsigned char *buf, int len)
       crc = (crc << 8) ^ *(crc16tab + (((crc >> 8) ^ *(char *)buf++) & 0x00FF));
   return crc;
 }
+
+void ustrncpy(unsigned char *dest, unsigned char *sour, unsigned char len)
+{
+  int i;
+  for (i = 0; i < len; i++)
+    *(dest + i) = *(sour + i);
+}

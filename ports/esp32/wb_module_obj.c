@@ -7,14 +7,8 @@
 
 #include "wb-lib/sender.h"
 #include "wb-lib/public.h"
+#include "wb-lib/syspublic.h"
 
-typedef struct _module_obj_content_t
-{
-    mp_obj_base_t base;   //定义的对象结构体要包含该成员
-    uint8_t des_addr;      //下面的成员，根据需要自己添加
-    uint8_t id;
-    uint8_t type;
-}module_obj_content_t;
 
 //定义无参数函数
 // STATIC mp_obj_t math_nothing()

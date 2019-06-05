@@ -22,7 +22,7 @@ void wb_uart_init(void)
     uart_param_config(UART_NUM_1, &uart_config);
     uart_set_pin(UART_NUM_1, 10, 9, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
     // uart_driver_install(UART_NUM_1, 2*1024, 0, 0, NULL, 0);
-    uart_driver_install(UART_NUM_1, 512, 512, 0, NULL, 0);
+    uart_driver_install(UART_NUM_1, 512, 0, 0, NULL, 0);
     uart_isr_free(UART_NUM_1);
     uart_isr_handle_t handle;
     uart_isr_register(UART_NUM_1, wb_uart_irq_handler, NULL, ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_IRAM, &handle);
@@ -34,7 +34,7 @@ void wb_uart_init(void)
 static void IRAM_ATTR wb_uart_irq_handler(void *arg) 
 {
     volatile uart_dev_t *uart = &UART1;
-    UART1_SendByte(0x00);
+    // UART1_SendByte(0x00);
     uart->int_clr.rxfifo_full = 1;
     uart->int_clr.frm_err = 1;
     uart->int_clr.rxfifo_tout = 1;
@@ -43,9 +43,9 @@ static void IRAM_ATTR wb_uart_irq_handler(void *arg)
     {
 
         uint8_t c = uart->fifo.rw_byte;
-        // hub_put(c);
+        hub_put(c);
         // printf("0x%02x\n", c);
-        UART1_SendByte(c);
+        // UART1_SendByte(c);
 
         // if (c == mp_interrupt_char) {
         //     // inline version of mp_keyboard_interrupt();

@@ -41,6 +41,8 @@
 #define CMD_ASK_UID 0x01
 #define CMD_GET_VERSION 0x02
 
+#define MODULE_TYPE_MAX 0x38
+
 #ifndef LED_RGB
 #define LED_RGB
 #define RGB_R 1
@@ -58,39 +60,39 @@
 
 #define IS_FUNCTION_RANG(NUM, MIN, MAX) (((NUM) >= (MIN)) || ((NUM) <= (MAX)))
 
-struct Head //消息包头
+typedef struct Head //消息包头
 {
   unsigned char targetAdd; //目标地址
   unsigned char sourceAdd; //源地址
   unsigned char type;      //消息类型
   unsigned char length;    //内容长度
-};
+}Head;
 
-struct Tail
-{
-  unsigned char crcH; //CRC的高8位
-  unsigned char crcL; //CRC的低8位
-};
+// typedef struct Tail
+// {
+//   unsigned char crcH; //CRC的高8位
+//   unsigned char crcL; //CRC的低8位
+// };
 
-struct Message
+typedef struct Message
 {
   struct Head head;
   unsigned char *data;
-};
+}Message;
 
-struct stPackage
-{
-  unsigned char startTag; //起始标志位 0XFF
-  struct Head head;
-  unsigned char *data;
-  struct Tail tail;
-  unsigned char endTag; //结束标志位 0XFE
-};
+// typedef struct stPackage
+// {
+//   unsigned char startTag; //起始标志位 0XFF
+//   struct Head head;
+//   unsigned char *data;
+//   struct Tail tail;
+//   unsigned char endTag; //结束标志位 0XFE
+// }stPackage;
 
-struct ReceiveData
+typedef struct ReceiveData
 {
   unsigned char buf[MSG_MAX_LENGTH_ALL];
   unsigned char index;
-};
+}ReceiveData;
 
 #endif

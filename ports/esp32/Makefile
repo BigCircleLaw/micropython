@@ -198,6 +198,7 @@ SRC_C = \
 	wb_frame_hub.c \
 	wb_led_control.c \
 	wb-lib/hub.c \
+	wb-lib/led.c \
 	wb-lib/module_manager.c\
 	wb-lib/receiver.c \
 	wb-lib/sender.c \

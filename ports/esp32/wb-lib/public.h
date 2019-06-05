@@ -3,6 +3,17 @@
 
 //  #define WONDERBITS_DEBUG
 
+#define SysAddr Addr_Master //系统地址
+
+#define MODULE_ADDR_Start 0x10
+
+#define MSG_MAX_LENGTH_ALL 45 //消息包最大长度，不是内容长度
+
+#define MSG_START_TAG 0xFF
+#define MSG_END_TAG 0xFE
+#define MSG_TRANSLATE_TAG 0xFD //转义字符
+
+
 #define Addr_Master 0x00
 #define Addr_Broadcast 0x01
 #define Addr_PC 0x02
@@ -46,5 +57,40 @@
 #define Slave 0x02
 
 #define IS_FUNCTION_RANG(NUM, MIN, MAX) (((NUM) >= (MIN)) || ((NUM) <= (MAX)))
+
+struct Head //消息包头
+{
+  unsigned char targetAdd; //目标地址
+  unsigned char sourceAdd; //源地址
+  unsigned char type;      //消息类型
+  unsigned char length;    //内容长度
+};
+
+struct Tail
+{
+  unsigned char crcH; //CRC的高8位
+  unsigned char crcL; //CRC的低8位
+};
+
+struct Message
+{
+  struct Head head;
+  unsigned char *data;
+};
+
+struct stPackage
+{
+  unsigned char startTag; //起始标志位 0XFF
+  struct Head head;
+  unsigned char *data;
+  struct Tail tail;
+  unsigned char endTag; //结束标志位 0XFE
+};
+
+struct ReceiveData
+{
+  unsigned char buf[MSG_MAX_LENGTH_ALL];
+  unsigned char index;
+};
 
 #endif

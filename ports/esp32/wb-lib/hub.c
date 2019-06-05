@@ -7,7 +7,7 @@
 
 #include "wb-lib/uart.h"
 
-#define HUB_MAX 10
+#define HUB_MAX 30
 
 static unsigned char buf[HUB_MAX][MSG_MAX_LENGTH_ALL];
 static unsigned char index = 0;

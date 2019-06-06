@@ -124,8 +124,8 @@ void module_manager_put(unsigned char *uid, unsigned char len)
     listqueue->uid = m_new(unsigned char, len);
     ustrncpy(listqueue->uid, uid, len); //保留类型的原因是要使用到排序中
 
-    Uart_send(uid, len);
-    Uart_send(listqueue->uid, len);
+    // Uart_send(uid, len);
+    // Uart_send(listqueue->uid, len);
 
     addr_count++;
 }
@@ -134,7 +134,7 @@ void module_manager_getlist(void)
 {
     unsigned char i, flagType;
     unsigned char typeNum[MODULE_TYPE_MAX];
-    UART1_SendByte(MODULE_TYPE_MAX);
+    // UART1_SendByte(MODULE_TYPE_MAX);
     for (i = 0; i < MODULE_TYPE_MAX; i++)
     {
         typeNum[i] = 0;
@@ -153,7 +153,7 @@ void module_manager_getlist(void)
             type_count += 1;
         }
     }
-    UART1_SendByte(type_count);
+    // UART1_SendByte(type_count);
     num = m_new(TypeStorage, type_count);
     unsigned char j = 0;
     for (i = 0; i < MODULE_TYPE_MAX; i++)
@@ -162,8 +162,8 @@ void module_manager_getlist(void)
         {
             num[j].type = i;
             num[j].num = typeNum[i];
-            UART1_SendByte(i);
-            UART1_SendByte(typeNum[i]);
+            // UART1_SendByte(i);
+            // UART1_SendByte(typeNum[i]);
             j += 1;
         }
     }
@@ -259,20 +259,20 @@ void module_manager_sendID(void)
         for (j_num = 0; j_num < num[i_type].num; j_num++)
         {
             data[0] = addrData[j].addr;
-            if (addrData[j].flag == 1)
-            {
+            // if (addrData[j].flag == 1)
+            // {
                 data[1] = RGB_B;
-            }
-            else
-            {
-                data[1] = RGB_LB;
-            }
+            // }
+            // else
+            // {
+            //     data[1] = RGB_LB;
+            // }
             for (i = 1; i < bufSendLen; i++)
             {
                 data[1 + i] = list[j].uid[i];
             }
             sendACK(Addr_Broadcast, TYPE_RESPONSE, data, bufSendLen + 1);
-            mp_hal_delay_ms(1);
+            mp_hal_delay_ms(2);
             m_free(list[j].uid);
             list[j].uid = NULL;
             j += 1;

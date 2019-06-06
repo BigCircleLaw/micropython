@@ -33,6 +33,7 @@ extern unsigned char module_manager_base_addr;
 
 void module_manager_put(unsigned char *uid, unsigned char len);
 void module_manager_init(void);
+void module_manager_doReport(unsigned char id, unsigned char *data);
 
 
 

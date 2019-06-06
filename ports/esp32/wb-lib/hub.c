@@ -69,15 +69,15 @@ void hub_distribute(void)
             // this->setResponseID(head->sourceAdd, tail);
             break;
         case TYPE_REPORT:
-            // module_manager_doReport(head->sourceAdd, buf[tail]);
+            module_manager_doReport(head->sourceAdd, buf[tail]);
             break;
         case TYPE_INSERT:
-            // if (head->length == 1)
-            // {
-            //     if (content[0] >= MODULE_TYPE_MAX)
-            //         return;
-            // }
-            // ESP.restart();
+            if (head->length == 1)
+            {
+                if (content[0] >= MODULE_TYPE_MAX)
+                    return;
+            }
+            esp_restart();
             break;
             
         }

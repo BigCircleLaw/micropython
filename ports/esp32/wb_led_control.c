@@ -7,52 +7,61 @@
 
 #include "wb-lib/public.h"
 #include "wb-lib/syspublic.h"
+#include "wb-lib/led.h"
 
 
 mp_obj_t led_control_red(mp_obj_t self_in) { 	
 
+    led_set_color(RGB_R);
 	return mp_const_none;  //返回计算的结果
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_control_red_obj, led_control_red);
 
 mp_obj_t led_control_green(mp_obj_t self_in) { 	
 
+    led_set_color(RGB_G);
 	return mp_const_none;  //返回计算的结果
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_control_green_obj, led_control_green);
 
 mp_obj_t led_control_blue(mp_obj_t self_in) { 	
 
+    led_set_color(RGB_B);
 	return mp_const_none;  //返回计算的结果
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_control_blue_obj, led_control_blue);
 
 mp_obj_t led_control_light_blue(mp_obj_t self_in) { 	
 
+    led_set_color(RGB_LB);
 	return mp_const_none;  //返回计算的结果
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_control_light_blue_obj, led_control_light_blue);
 
 mp_obj_t led_control_yellow(mp_obj_t self_in) { 	
 
+    led_set_color(RGB_Y);
 	return mp_const_none;  //返回计算的结果
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_control_yellow_obj, led_control_yellow);
 
 mp_obj_t led_control_purple(mp_obj_t self_in) { 	
 
+    led_set_color(RGB_P);
 	return mp_const_none;  //返回计算的结果
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_control_purple_obj, led_control_purple);
 
 mp_obj_t led_control_white(mp_obj_t self_in) { 	
 
+    led_set_color(RGB_W);
 	return mp_const_none;  //返回计算的结果
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_control_white_obj, led_control_white);
 
 mp_obj_t led_control_off(mp_obj_t self_in) { 	
 
+    led_set_color(RGB_OFF);
 	return mp_const_none;  //返回计算的结果
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_control_off_obj, led_control_off);

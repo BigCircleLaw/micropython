@@ -119,6 +119,17 @@ mp_obj_t module_get_firmware_version(size_t n_args, const mp_obj_t *args) {
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(module_get_firmware_version_obj, 1, 2, module_get_firmware_version);
 
+//定义ModuleObj._do_update_value函数
+// mp_obj_t module_obj_init(mp_obj_t self_in, mp_obj_t id, mp_obj_t type ) { 	
+//     // module_obj_content_t *self=MP_OBJ_TO_PTR(self_in);  //从第一个参数里面取出对象的指针
+//     module_obj_content_t *self=MP_OBJ_TO_PTR(self_in);
+//     self->id = mp_obj_get_int(id);
+//     self->type = mp_obj_get_int(type);
+    
+// 	return mp_const_none;  //返回计算的结果
+// }
+
+// STATIC MP_DEFINE_CONST_FUN_OBJ_3(module_obj_init_obj, module_obj_init);
 //定义type的locals_dict_type
 STATIC const mp_rom_map_elem_t module_obj_locals_dict_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR__get_data), MP_ROM_PTR(&module_get_data_obj)},
@@ -127,6 +138,7 @@ STATIC const mp_rom_map_elem_t module_obj_locals_dict_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR_send_with_ack), MP_ROM_PTR(&module_send_with_ack_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_set_onboard_rgb), MP_ROM_PTR(&module_set_onboard_rgb_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_get_firmware_version), MP_ROM_PTR(&module_get_firmware_version_obj)},
+    // {MP_OBJ_NEW_QSTR(MP_QSTR___init__), MP_ROM_PTR(&module_obj_init_obj)},
 };
 //这个定义字典的宏定义
 STATIC MP_DEFINE_CONST_DICT(module_obj_locals_dict, module_obj_locals_dict_table);
@@ -138,6 +150,8 @@ STATIC mp_obj_t wonderbits_module_obj_make_new(const mp_obj_type_t *type, size_t
     module_obj_content_t *self=m_new_obj(module_obj_content_t);       //创建对象，分配空间
     self->base.type=&wonderbits_module_obj_type;           //定义对象的类型
     self->id = mp_obj_get_int(args[0]);
+    self->type = mp_obj_get_int(args[1]);
+    // module_obj_init(self, args[0], args[1]);
     return MP_OBJ_FROM_PTR(self);                 //返回对象的指针
 }
 

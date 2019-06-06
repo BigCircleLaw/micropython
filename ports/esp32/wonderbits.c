@@ -5,6 +5,7 @@
 #include "py/runtime.h"
 
 #include "wb-lib/syspublic.h"
+#include "wb-lib/public.h"
 #include "wb-lib/uart.h"
 #include "wb-lib/module_manager.h"
 #include "wb-lib/led.h"
@@ -32,8 +33,28 @@ STATIC mp_obj_t wb_distribute(mp_obj_t data)
     return mp_const_none;  //同样没有返回值
 }
 
-//这里使用的宏定义和面的名称不一样，OBJ_1区别
 STATIC const MP_DEFINE_CONST_FUN_OBJ_1(wb_distribute_obj,wb_distribute);
+
+STATIC mp_obj_t wb_constrain(mp_obj_t amt, mp_obj_t low, mp_obj_t high)
+{
+
+    mp_float_t _amt, _low, _high;
+
+    _amt = mp_obj_get_float(amt);
+    _low = mp_obj_get_float(low);
+    _high = mp_obj_get_float(high);
+    
+    if(_amt < _low)
+        return low;
+    else if(_amt > _high)
+        return high;
+    else
+        return amt;
+    
+    return mp_const_none;  //同样没有返回值
+}
+
+STATIC const MP_DEFINE_CONST_FUN_OBJ_3(wb_constrain_obj,wb_constrain);
 
 extern const mp_obj_type_t wonderbits_module_obj_type;
 extern const mp_obj_type_t wonderbits_data_format_type;
@@ -49,6 +70,8 @@ STATIC const mp_rom_map_elem_t wonderbits_globals_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR_led), MP_ROM_PTR(&mp_const_led_control_obj)}, 
     {MP_OBJ_NEW_QSTR(MP_QSTR_init), MP_ROM_PTR(&wonderbitd_init_obj)}, 
     {MP_OBJ_NEW_QSTR(MP_QSTR_distribute), MP_ROM_PTR(&wb_distribute_obj)}, 
+    {MP_OBJ_NEW_QSTR(MP_QSTR__TYPE_REQUEST), MP_ROM_INT(TYPE_REQUEST)}, 
+    {MP_OBJ_NEW_QSTR(MP_QSTR_constrain), MP_ROM_PTR(&wb_constrain_obj)}, 
 };
 
 //这个可以认为是把modtest_globals_table注册到 mp_module_modtest.globals里面去

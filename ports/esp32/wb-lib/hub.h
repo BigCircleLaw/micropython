@@ -3,6 +3,7 @@
 
 
 void  hub_put(unsigned char data);
-void hub_distribute(void);
+unsigned char * hub_distribute(void);
+unsigned char hub_available(void);
 
 #endif

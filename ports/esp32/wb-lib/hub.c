@@ -46,44 +46,24 @@ void  hub_put(unsigned char data)
     }
 }
 
-void hub_distribute(void)
+unsigned char * hub_distribute(void)
 {
     // UART1_SendByte(num);
-    while(num > 0)
+    if(num > 0)
     {
-        struct Head *head = (struct Head *)buf[tail];
-        unsigned char *content = buf[tail] + sizeof(struct Head);
-        
-        // UART1_SendByte(head->length);
-        // Uart_send(buf[tail], head->length + 4);
-        
-        // UART1_SendByte(0xF0);
-        // UART1_SendByte(head->type);
-        switch (head->type)
-        {
+        // struct Head *head = (struct Head *)buf[tail];
+        // unsigned char *content = buf[tail] + sizeof(struct Head);
 
-        case TYPE_INIT:
-            module_manager_put(content, head->length);
-            break;
-        case TYPE_RESPONSE:
-            // this->setResponseID(head->sourceAdd, tail);
-            break;
-        case TYPE_REPORT:
-            module_manager_doReport(head->sourceAdd, buf[tail]);
-            break;
-        case TYPE_INSERT:
-            if (head->length == 1)
-            {
-                if (content[0] >= MODULE_TYPE_MAX)
-                    return;
-            }
-            esp_restart();
-            break;
-            
-        }
-        // UART1_SendByte(0);
+        unsigned char *content = buf[tail];
 
         tail = (tail + 1) % HUB_MAX;
         num--;
+        return content;
     }
+    return NULL;
+}
+
+unsigned char hub_available(void)
+{
+   return num; 
 }

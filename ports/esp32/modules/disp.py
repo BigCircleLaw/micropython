@@ -9,9 +9,10 @@
 
 # from wb import DEVICE_TYPE
 from wb import _TYPE_REQUEST
-from wb import ModuleObj, constrain
+from wb import constrain
 from wb import _DataFormat
 from micropython import const
+from ModuleObj import ModuleObj
 # from EventManager import EventNameList, _return_event_start, _set_event_value, EventManager
 
 # BUTTON_NONE = 0
@@ -39,7 +40,7 @@ _CMD_OLED_REFRESH = const(0x13)  # 手动刷新显示命令
 _DISPLAY_TIMEOUT = const(100)
 
 
-class Display(object):
+class Display(ModuleObj):
     BUTTON_NONE = const(0x01)
     """
     翻页按键未按下
@@ -80,7 +81,7 @@ class Display(object):
     _COLOR_BLACK = const(0x01)
 
     def __init__(self, id=1):
-        # ModuleObj(id - 1, 0x03, self._get_data)
+        ModuleObj.__init__(self, id, 0x03)
         self._X = 1
         self._Y = 1
         self._data_own = [1]
@@ -94,7 +95,7 @@ class Display(object):
 
     def _get_data(self, frame):
 
-        temp = _DataFormat(['B'])
+        temp = _DataFormat('B')
         value = temp.get_data_list(frame[4:])[0]
         self._data_own[0] = 0x01 << value if value < 4 else 0x08
 
@@ -160,7 +161,7 @@ class Display(object):
             text = str(text) + ' '
 
         # uart2.write('b')
-        temp = _DataFormat(['B', 'B', 'B', 'B', 'B', 'B', 'str'])
+        temp = _DataFormat('BBBBBBS')
         # uart2.write('c')
         self._send_without_ack(
             _TYPE_REQUEST,
@@ -211,7 +212,7 @@ class Display(object):
             """
         x = constrain(x, 1, 119)
         y = constrain(y, 1, 32)
-        temp = _DataFormat(['B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'])
+        temp = _DataFormat('BBBBBBBB')
         self._send_without_ack(
             _TYPE_REQUEST,
             temp.get_list([
@@ -274,7 +275,7 @@ class Display(object):
         head_y = constrain(head_y, 1, 32)
         tail_x = constrain(tail_x, 1, 119)
         tail_y = constrain(tail_y, 1, 32)
-        temp = _DataFormat(['B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'])
+        temp = _DataFormat('BBBBBBBB')
         self._send_without_ack(
             _TYPE_REQUEST,
             temp.get_list([
@@ -376,7 +377,7 @@ class Display(object):
                     time.sleep(2) # 等待2秒
             """
         page = constrain(page, 1, 8)
-        temp = _DataFormat(['B', 'B'])
+        temp = _DataFormat('BB')
         self._send_without_ack(_TYPE_REQUEST,
                                temp.get_list([_CMD_OLED_Page, page - 1]))
 
@@ -416,7 +417,7 @@ class Display(object):
 
             """
         page = constrain(page, 1, 8) - 1
-        temp = _DataFormat(['B', 'B'])
+        temp = _DataFormat('BB')
         self._send_without_ack(_TYPE_REQUEST,
                                temp.get_list([_CMD_OLED_ClearRow, page]))
         self._chart_x[page] = None
@@ -461,7 +462,7 @@ class Display(object):
             """
         self._X = 1
         self._Y = 1
-        temp = _DataFormat(['B'])
+        temp = _DataFormat('B')
         if block:
             self._send_with_ack(_TYPE_REQUEST, temp.get_list(
                 [_CMD_OLED_Clear]), _DISPLAY_TIMEOUT)
@@ -483,7 +484,7 @@ class Display(object):
             未提供。可参考 `get_button_state`_ 的使用案例
 
             """
-        temp = _DataFormat(['B', 'B'])
+        temp = _DataFormat('BB')
         self._send_without_ack(
             _TYPE_REQUEST,
             temp.get_list([_CMD_OLED_BUTTON, Display._BUTTON_DISABLE]))
@@ -506,7 +507,7 @@ class Display(object):
                 display1.enable_page_turning()
 
             """
-        temp = _DataFormat(['B', 'B'])
+        temp = _DataFormat('BB')
         self._send_without_ack(
             _TYPE_REQUEST,
             temp.get_list([_CMD_OLED_BUTTON, Display._BUTTON_ENABLE]))
@@ -557,7 +558,7 @@ class Display(object):
         return (self._data_own[0] & 0x1F)
 
     def _set_direction(self, dir):
-        temp = _DataFormat(['B', 'B'])
+        temp = _DataFormat('BB')
         self._send_without_ack(_TYPE_REQUEST,
                                temp.get_list([_CMD_OLED_TURN, dir]))
 
@@ -630,7 +631,7 @@ class Display(object):
                         display1.print(1, 1, '0123456789abcdef')
 
             """
-        temp = _DataFormat(['B', 'B'])
+        temp = _DataFormat('BB')
         self._send_without_ack(_TYPE_REQUEST,
                                temp.get_list([_CMD_OLED_ROLL, 1]))
 
@@ -644,7 +645,7 @@ class Display(object):
             未提供。可参考 `hide_scrollbar`_ 的使用案例
 
             """
-        temp = _DataFormat(['B', 'B'])
+        temp = _DataFormat('BB')
         self._send_without_ack(_TYPE_REQUEST,
                                temp.get_list([_CMD_OLED_ROLL, 0]))
 
@@ -679,7 +680,7 @@ class Display(object):
         self._X = column
 
     def _set_update(self, key):
-        temp = _DataFormat(['B', 'B'])
+        temp = _DataFormat('BB')
         self._send_without_ack(_TYPE_REQUEST,
                                temp.get_list([_CMD_OLED_UPDATE, key]))
 
@@ -750,7 +751,7 @@ class Display(object):
             未提供。可参考 `disable_auto_refresh`_ 的使用案例
 
             """
-        temp = _DataFormat(['B'])
+        temp = _DataFormat('B')
         self._send_without_ack(_TYPE_REQUEST,
                                temp.get_list([_CMD_OLED_REFRESH]))
 
@@ -795,7 +796,7 @@ class Display(object):
             """
         x = constrain(x, 1, 119)
         y = constrain(y, 1, 32)
-        temp = _DataFormat(['B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'])
+        temp = _DataFormat('BBBBBBBB')
         self._send_without_ack(
             _TYPE_REQUEST,
             temp.get_list([
@@ -858,7 +859,7 @@ class Display(object):
         head_y = constrain(head_y, 1, 32)
         tail_x = constrain(tail_x, 1, 119)
         tail_y = constrain(tail_y, 1, 32)
-        temp = _DataFormat(['B', 'B', 'B', 'B', 'B', 'B', 'B', 'B'])
+        temp = _DataFormat('BBBBBBBB')
         self._send_without_ack(
             _TYPE_REQUEST,
             temp.get_list([

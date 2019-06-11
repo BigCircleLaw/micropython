@@ -13,11 +13,11 @@
 
 #include "wb-lib/syspublic.h"
 
-typedef struct LinkList
-{
-    module_obj_content_t *head;
-    module_obj_content_t *tail;
-} LinkList;
+// typedef struct LinkList
+// {
+//     module_obj_content_t *head;
+//     module_obj_content_t *tail;
+// } LinkList;
 
 unsigned char module_manager_base_addr = 1; //地址分配时地址计数
 
@@ -25,7 +25,7 @@ static unsigned char bufSendLen; //在初始化阶段用来记录从机UID长度
 
 static TypeStorage *definedModuleTypeNum = NULL;      //该种类在程序中定义的数量
 static unsigned char definedModuleType_count = 0;     //所有定义模块的地址数量
-static LinkList definedModuleLinkList = {NULL, NULL}; //该种类在程序中定义组成的链表
+// static LinkList definedModuleLinkList = {NULL, NULL}; //该种类在程序中定义组成的链表
 
 static TypeStorage *num = NULL;      //该种类连接在主机上的数量
 static Module *listHead = NULL;      //listqueue的头地址
@@ -72,7 +72,7 @@ unsigned char module_manager_getAddr(unsigned char id, unsigned char type)
     {
         if ((type == num[i_type].type) && (id <= num[i_type].num))
         {
-            addrData[addrCount + id - 1].flag = 1;
+            // addrData[addrCount + id - 1].flag = 1;
             return addrData[addrCount + id - 1].addr;
         }
         addrCount += num[i_type].num;
@@ -98,25 +98,27 @@ int ModuleComp(const void *a, const void *b)
 
 void module_manager_put(unsigned char *uid, unsigned char len)
 {
-    // UART1_SendByte(2);
+    // UART1_SendByte(0xF2);
     module_manager_base_addr = 1;
     if (listHead == NULL)
     {
+        // UART1_SendByte(0x13);
         listHead = m_new(Module, 1);
         if (NULL == listHead)
             return;
         listqueue = listHead;
         listqueue->next = NULL;
-        // UART1_SendByte(3);
+        // UART1_SendByte(0xF3);
     }
     else
     {
+        // UART1_SendByte(0x14);
         listqueue->next = m_new(Module, 1);
         if (NULL == listqueue->next)
             return;
         listqueue = listqueue->next;
         listqueue->next = NULL;
-        // UART1_SendByte(4);
+        // UART1_SendByte(0xF4);
     }
     // UART1_SendByte(len);
     if (len > bufSendLen)
@@ -168,18 +170,18 @@ void module_manager_getlist(void)
         }
     }
     ////////////////////////////////////////////////////////////////////////
-    j = 0;
-    for (i = 0; i < MODULE_TYPE_MAX; i++)
-    {
-        typeNum[i] = 0;
-    }
+    // j = 0;
+    // for (i = 0; i < MODULE_TYPE_MAX; i++)
+    // {
+    //     typeNum[i] = 0;
+    // }
 
-    definedModuleLinkList.tail = definedModuleLinkList.head;
-    while (definedModuleLinkList.tail != NULL)
-    {
-        typeNum[definedModuleLinkList.tail->type] += 1;
-        definedModuleLinkList.tail = definedModuleLinkList.tail->next;
-    }
+    // definedModuleLinkList.tail = definedModuleLinkList.head;
+    // while (definedModuleLinkList.tail != NULL)
+    // {
+    //     typeNum[definedModuleLinkList.tail->type] += 1;
+    //     definedModuleLinkList.tail = definedModuleLinkList.tail->next;
+    // }
     /********************************************************************************************/
     //计算用户定义的每种类型模块的数量
     // for (i = 0; i < MODULE_TYPE_MAX; i++)
@@ -208,7 +210,7 @@ void module_manager_getlist(void)
     // UART1_SendByte(addr_count);
     j = 0;
     listqueue = listHead;
-    // UART1_SendByte(listqueue->type_id);
+    
     while (listqueue != NULL)
     {
         list[j].uid = m_new(unsigned char, bufSendLen);
@@ -231,17 +233,6 @@ void module_manager_sort(void)
     qsort(list, addr_count, sizeof(ModuleStorage), ModuleComp);
 }
 
-void module_manager_setID(void)
-{
-    definedModuleLinkList.tail = definedModuleLinkList.head;
-    while (definedModuleLinkList.tail != NULL)
-    {
-        definedModuleLinkList.tail->des_addr = module_manager_getAddr(
-            definedModuleLinkList.tail->id,
-            definedModuleLinkList.tail->type);
-        definedModuleLinkList.tail = definedModuleLinkList.tail->next;
-    }
-}
 
 /**
     @brief  ��   
@@ -296,7 +287,6 @@ void module_manager_loadID(void)
         addrData[j_num].flag = 0;
         // mp_hal_delay_ms(1);
     }
-    module_manager_setID();
     module_manager_sendID();
 }
 
@@ -329,25 +319,25 @@ void module_manager_init(void)
 
 void module_manager_doReport(unsigned char id, unsigned char *data)
 {
-    definedModuleLinkList.tail = definedModuleLinkList.head;
-    while (definedModuleLinkList.tail != NULL)
-    {
-        if (definedModuleLinkList.tail->des_addr == id)
-        {
-            // definedModuleLinkList.tail->getData(data);
-            return; //
-        }
-        definedModuleLinkList.tail = definedModuleLinkList.tail->next;
-    }
+    // definedModuleLinkList.tail = definedModuleLinkList.head;
+    // while (definedModuleLinkList.tail != NULL)
+    // {
+    //     if (definedModuleLinkList.tail->des_addr == id)
+    //     {
+    //         // definedModuleLinkList.tail->getData(data);
+    //         return; //
+    //     }
+    //     definedModuleLinkList.tail = definedModuleLinkList.tail->next;
+    // }
 }
 void module_manager_doUpdate(void)
 {
-    definedModuleLinkList.tail = definedModuleLinkList.head;
-    while (definedModuleLinkList.tail != NULL)
-    {
-        // definedModuleLinkList.tail->doUpdateValue();
-        definedModuleLinkList.tail = definedModuleLinkList.tail->next;
-    }
+    // definedModuleLinkList.tail = definedModuleLinkList.head;
+    // while (definedModuleLinkList.tail != NULL)
+    // {
+    //     // definedModuleLinkList.tail->doUpdateValue();
+    //     definedModuleLinkList.tail = definedModuleLinkList.tail->next;
+    // }
 }
 
 unsigned char module_manager_getSendBufLength(void)

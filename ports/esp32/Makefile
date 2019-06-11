@@ -193,7 +193,7 @@ SRC_C = \
 	mpthreadport.c \
 	machine_rtc.c \
 	wonderbits.c \
-	wb_module_obj.c \
+	wb_module_manager.c \
 	wb_data_format.c \
 	wb_frame_hub.c \
 	wb_led_control.c \

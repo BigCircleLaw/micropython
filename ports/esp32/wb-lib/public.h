@@ -1,7 +1,7 @@
 #ifndef _WB_PUBLIC_H_
 #define _WB_PUBLIC_H_
 
-//  #define WONDERBITS_DEBUG
+ #define WONDERBITS_DEBUG 0
 
 #define SysAddr Addr_Master //系统地址
 

@@ -1,4 +1,5 @@
 
+#include "stdio.h"
 
 #include "py/obj.h"
 #include "py/mphal.h"
@@ -23,8 +24,8 @@ unsigned char module_manager_base_addr = 1; //地址分配时地址计数
 
 static unsigned char bufSendLen; //在初始化阶段用来记录从机UID长度，之后用来表示bufSend长度
 
-static TypeStorage *definedModuleTypeNum = NULL;      //该种类在程序中定义的数量
-static unsigned char definedModuleType_count = 0;     //所有定义模块的地址数量
+// static TypeStorage *definedModuleTypeNum = NULL;  //该种类在程序中定义的数量
+// static unsigned char definedModuleType_count = 0; //所有定义模块的地址数量
 // static LinkList definedModuleLinkList = {NULL, NULL}; //该种类在程序中定义组成的链表
 
 static TypeStorage *num = NULL;      //该种类连接在主机上的数量
@@ -36,44 +37,53 @@ static unsigned char addr_count = 0; //所有模块的地址数量
 static unsigned char type_count = 0; //所有模块的类型数量
 
 
-// #define SEND_PC_MAX_LEN 30
-// void module_manager_sendTypeAddrtoPC(void)
-// {
-//     unsigned char i, j, index = 2;
-//     unsigned char sendPCBuffer[SEND_PC_MAX_LEN];
-//     unsigned char addrCount = 0, position = 0;
-//     sendPCBuffer[0] = addrInquire;
-//     for (i = 0, j = 0; i < type_count; i++)
-//     {
-//         if ((index + num[i].num + 2) > SEND_PC_MAX_LEN)
-//         {
-//             sendPCBuffer[1] = i - position;
-//             MyPC.sendWithoutACK(TYPE_RESPONSE, sendPCBuffer, index);
-//             index = 2;
-//             position = i;
-//         }
-
-//         sendPCBuffer[index++] = num[i].type;
-//         sendPCBuffer[index++] = num[i].num;
-//         for (j = 0; j < num[i].num; j++)
-//         {
-//             sendPCBuffer[index++] = addrData[addrCount + j].addr;
-//         }
-//         addrCount += num[i].num;
-//     }
-//     sendPCBuffer[1] = i - position;
-//     MyPC.sendWithoutACK(TYPE_RESPONSE, sendPCBuffer, index);
-// }
+unsigned char *module_manager_sendTypeAddrtoPC(void)
+{
+    #if WONDERBITS_DEBUG
+    printf("module_manager_sendTypeAddrtoPC\n");
+    printf("type_count: %d,", type_count);
+    #endif
+    unsigned char i;
+    unsigned char *sendPCBuffer = m_new(unsigned char, type_count * 2 + 1);
+    if(sendPCBuffer == NULL)
+        return NULL;
+    unsigned char position = 0;
+    sendPCBuffer[position++] = type_count;
+    for (i = 0; i < type_count; i++)
+    {
+        sendPCBuffer[position++] = num[i].type;
+        sendPCBuffer[position++] = num[i].num;
+        #if WONDERBITS_DEBUG
+        printf("type: %d,", num[i].type);
+        printf("num: %d,", num[i].num);
+        #endif
+    }
+    #if WONDERBITS_DEBUG
+    printf("\n");
+    #endif
+    return sendPCBuffer;
+}
 
 unsigned char module_manager_getAddr(unsigned char id, unsigned char type)
 {
+#if WONDERBITS_DEBUG
+    printf("module_manager_getAddr\n");
+    printf("type: %d, id: %d\n", type, id);
+    printf("type_count: %d\n", type_count);
+#endif
     unsigned char addrCount = 0;
     for (unsigned char i_type = 0; i_type < type_count; i_type++)
     {
+        #if WONDERBITS_DEBUG
+        printf("type: %d, num: %d\n", num[i_type].type, num[i_type].num);
+        #endif
         if ((type == num[i_type].type) && (id <= num[i_type].num))
         {
+            #if WONDERBITS_DEBUG
+            printf("addr: %d\n", addrData[addrCount + id].addr);
+            #endif
             // addrData[addrCount + id - 1].flag = 1;
-            return addrData[addrCount + id - 1].addr;
+            return addrData[addrCount + id].addr;
         }
         addrCount += num[i_type].num;
     }
@@ -134,7 +144,7 @@ void module_manager_put(unsigned char *uid, unsigned char len)
 
 void module_manager_getlist(void)
 {
-    unsigned char i, flagType;
+    unsigned char i;
     unsigned char typeNum[MODULE_TYPE_MAX];
     // UART1_SendByte(MODULE_TYPE_MAX);
     for (i = 0; i < MODULE_TYPE_MAX; i++)
@@ -210,7 +220,7 @@ void module_manager_getlist(void)
     // UART1_SendByte(addr_count);
     j = 0;
     listqueue = listHead;
-    
+
     while (listqueue != NULL)
     {
         list[j].uid = m_new(unsigned char, bufSendLen);
@@ -233,7 +243,6 @@ void module_manager_sort(void)
     qsort(list, addr_count, sizeof(ModuleStorage), ModuleComp);
 }
 
-
 /**
     @brief  ��   
     @param  None
@@ -252,7 +261,7 @@ void module_manager_sendID(void)
             data[0] = addrData[j].addr;
             // if (addrData[j].flag == 1)
             // {
-                data[1] = RGB_B;
+            data[1] = RGB_B;
             // }
             // else
             // {

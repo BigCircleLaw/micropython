@@ -18,8 +18,7 @@ flag = False
 button = Pin(26, Pin.IN, value=1, pull=Pin.PULL_UP)
 
 def distribute(t):
-    # uart2.write('start')
-    # uart2.write(str(len(_buf)))
+    wb.module_manager.send_a_data(0)
     if button.value() == 0:
         reset()
     while wb.hub.available():
@@ -42,6 +41,7 @@ def distribute(t):
         #     print_s(buf[:(4 + buf[3])])
 
         # uart2.write('end')
+    wb.module_manager.send_a_data(0xFF)
 
 
 def getResponse(self, addr):

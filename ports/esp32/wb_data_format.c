@@ -11,6 +11,14 @@
 #include "wb-lib/tool.h"
 
 static bool wb_add_data(unsigned char val_type, unsigned char *buf, mp_obj_t data, unsigned char *num);
+static mp_obj_t wb_add_list(unsigned char val_type, unsigned char *buf, unsigned char *num, unsigned char len);
+
+STATIC mp_obj_list_t *new_list(size_t n)
+{
+    mp_obj_list_t *o = m_new_obj(mp_obj_list_t);
+    mp_obj_list_init(o, n);
+    return o;
+}
 
 typedef struct _data_format_content_t
 {
@@ -32,9 +40,21 @@ mp_obj_t data_format_get_receive_list(mp_obj_t self_in, mp_obj_t data)
     // module_obj_content_t *self=MP_OBJ_TO_PTR(self_in);  //从第一个参数里面取出对象的指针
     data_format_content_t *self = MP_OBJ_TO_PTR(self_in);
 
-    self->receive_data = mp_obj_str_get_data(data, &(self->receive_len));
+    // self->receive_data = mp_obj_str_get_data(data, &(self->receive_len));
+    // printf("receive list\n");
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
+    unsigned char count = 0;
+    mp_obj_list_t *list = new_list(self->len_translate);
 
-    return mp_const_none; //返回计算的结果
+    // printf("length : %d\n", self->len_translate);
+    for (unsigned char i = 0; i < self->len_translate; i++)
+    {
+        list->items[i] = wb_add_list(self->buffer_translate[i], bufinfo.buf, &count, 0);
+        // printf("list : %c:%d\n", self->buffer_translate[i], ((unsigned char*)bufinfo.buf)[i]);
+    }
+
+    return MP_OBJ_FROM_PTR(list); //返回计算的结果
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(data_format_get_receive_list_obj, data_format_get_receive_list);
 
@@ -44,13 +64,17 @@ mp_obj_t data_format_get_send_list(mp_obj_t self_in, mp_obj_t data)
     // module_obj_content_t *self=MP_OBJ_TO_PTR(self_in);  //从第一个参数里面取出对象的指针
     data_format_content_t *self = MP_OBJ_TO_PTR(self_in);
 
+#if WONDERBITS_DEBUG
+    printf("get_send_list\n");
+#endif
+
     mp_obj_t *list_items;
     size_t len;
     mp_obj_list_get(data, &len, &list_items);
     unsigned char count = 0;
     if (self->len_translate != len)
     {
-        printf("Format error!");
+        printf("Format error!\n");
         return mp_const_none;
     }
     // self->send_data = (const unsigned char *)mp_obj_str_get_data(data, &(self->send_len));
@@ -58,9 +82,17 @@ mp_obj_t data_format_get_send_list(mp_obj_t self_in, mp_obj_t data)
     {
         if (wb_add_data(self->buffer_translate[i], self->buffer, list_items[i], &count))
         {
-            printf("Format error! index : %d", i);
+            printf("Format error! index : %d\n", i);
         }
     }
+#if WONDERBITS_DEBUG
+    printf("data : ");
+    for (unsigned char i = 0; i < count; i++)
+    {
+        printf("%d,", self->buffer[i]);
+    }
+    printf("\n");
+#endif
     mp_obj_array_t *result = MP_OBJ_TO_PTR(mp_obj_new_memoryview('B',
                                                                  count,
                                                                  self->buffer));
@@ -101,6 +133,75 @@ const mp_obj_type_t wonderbits_data_format_type = {
     .make_new = wonderbits_data_format_make_new,
     .locals_dict = (mp_obj_dict_t *)&data_format_locals_dict, //注册math_locals_dict
 };
+
+static mp_obj_t wb_add_list(unsigned char val_type, unsigned char *buf, unsigned char *num, unsigned char len)
+{
+    unsigned char count = *num;
+    mp_obj_t data = mp_const_none;
+    // unsigned char size = 0;
+    // unsigned char temp[4] = {0, 0, 0, 0};
+    switch (val_type)
+    {
+    case 'b':
+    case 'B':
+    {
+        int val = buf[count];
+        data = mp_obj_new_int(val);
+        *num = count + 1;
+        break;
+    }
+    case 'h':
+    case 'H':
+    {
+        short val = *(short *)(buf + count);
+        data = mp_obj_new_int(val);
+        *num = count + 2;
+        break;
+    }
+    case 'i':
+    case 'I':
+    {
+        int val = *(int *)(buf + count);
+        data = mp_obj_new_int(val);
+        *num = count + 4;
+        break;
+    }
+    case 'l':
+    case 'L':
+    {
+        long val = *(long *)(buf + count);
+        data = mp_obj_new_int(val);
+        *num = count + 4;
+        break;
+    }
+    // case 'q':
+    // case 'Q':
+    //     break;
+    case 'P':
+    case 'O':
+    case 'S':
+    {
+        // mp_buffer_info_t bufinfo;
+        // mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
+        // ustrncpy((unsigned char *)bufinfo.buf, (buf + count), len);
+        *num = count + len;
+        break;
+    }
+    case 'f':
+    {
+        float val = *(float *)(buf + count);
+        data = mp_obj_new_float(val);
+        *num = count + 4;
+        break;
+    }
+        // case 'd':
+        //     break;
+    default:
+        return data;
+    }
+
+    return data;
+}
 
 static bool wb_add_data(unsigned char val_type, unsigned char *buf, mp_obj_t data, unsigned char *num)
 {
@@ -153,7 +254,7 @@ static bool wb_add_data(unsigned char val_type, unsigned char *buf, mp_obj_t dat
         if (20 < len)
         {
             len = 20;
-            printf("S length can't exceed 20");
+            printf("S length can't exceed 20\n");
         }
         ustrncpy((buf + count), (unsigned char *)bufinfo.buf, len);
         *num = count + len;

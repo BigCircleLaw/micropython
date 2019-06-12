@@ -8,12 +8,13 @@
 """
 
 # from wb import DEVICE_TYPE
+from public import DEVICE_TYPE
 from wb import _TYPE_REQUEST
 from wb import constrain
 from wb import _DataFormat
 from micropython import const
 from ModuleObj import ModuleObj
-# from EventManager import EventNameList, _return_event_start, _set_event_value, EventManager
+from EventManager import EventNameList, _return_event_start, _set_event_value, EventManager
 
 # BUTTON_NONE = 0
 # BUTTON_L = 1
@@ -38,6 +39,18 @@ _CMD_OLED_UPDATE = const(0x12)  # 自动更新显示设置
 _CMD_OLED_REFRESH = const(0x13)  # 手动刷新显示命令
 
 _DISPLAY_TIMEOUT = const(100)
+
+_BUTTON_ENABLE = const(1)
+_BUTTON_DISABLE = const(2)
+
+_DIR_ROTATED = const(0)
+_DIR_INITIAL = const(1)
+
+_DRAW_NORMAL = const(0x00)
+_DRAW_SAVED = const(0x01)
+
+_COLOR_WHITE = const(0x00)
+_COLOR_BLACK = const(0x01)
 
 
 class Display(ModuleObj):
@@ -68,38 +81,257 @@ class Display(ModuleObj):
     大号字体
     """
 
-    _BUTTON_ENABLE = const(1)
-    _BUTTON_DISABLE = const(2)
+    class _Event(EventNameList):
+        def __init__(self, id, nameList):
+            EventNameList.__init__(self, Display, id, nameList)
 
-    _DIR_ROTATED = const(0)
-    _DIR_INITIAL = const(1)
+        def button_left(self, interval=50):
+            """
+                当翻页按键向左拨动会执行事件修饰的函数
 
-    _DRAW_NORMAL = const(0x00)
-    _DRAW_SAVED = const(0x01)
+                Parameters
+                ----------
+                interval : int
+                    表示每隔interval ms的时间检查值是否符合触发要求
 
-    _COLOR_WHITE = const(0x00)
-    _COLOR_BLACK = const(0x01)
+                Metas
+                ---------------
+                in :interval
+                    default: 50
+                    range: 50~60000
+
+                Examples
+                -------
+
+                .. code-block:: python
+
+                    # 当翻页按键向左拨动时，执行函数function
+                    @display1.event.button_left()
+                    def function():
+                        pass
+
+                    # 修改检测周期为100ms,当翻页按键向左拨动时，执行函数function
+                    @display1.event.button_left(100)
+                    def function():
+                        pass
+
+                """
+            event = _return_event_start(
+                0,
+                EventManager._BOOL_VALUE_TYPE,
+                self.get_name('Left'),
+                numFlag=Display.BUTTON_L)
+            return event._compare(EventManager._FALSE_TO_TRUE_ACTION, None,
+                                  interval)
+
+        def button_right(self, interval=50):
+            """
+                当翻页按键向右拨动会执行事件修饰的函数
+
+                Parameters
+                ----------
+                interval : int
+                    表示每隔interval ms的时间检查值是否符合触发要求
+
+                Metas
+                ---------------
+                in :interval
+                    default: 50
+                    range: 50~60000
+
+                Examples
+                -------
+
+                .. code-block:: python
+
+                    # 当翻页按键向右拨动时，执行函数function
+                    @display1.event.button_right()
+                    def function():
+                        pass
+
+                    # 修改检测周期为100ms,当翻页按键向右拨动时，执行函数function
+                    @display1.event.button_right(100)
+                    def function():
+                        pass
+
+                """
+            event = _return_event_start(
+                0,
+                EventManager._BOOL_VALUE_TYPE,
+                self.get_name('Right'),
+                numFlag=Display.BUTTON_R)
+            return event._compare(EventManager._FALSE_TO_TRUE_ACTION, None,
+                                  interval)
+
+        def button_pressed(self, interval=50):
+            """
+                当翻页按键按下会执行事件修饰的函数
+
+                Parameters
+                ----------
+                interval : int
+                    表示每隔interval ms的时间检查值是否符合触发要求
+
+                Metas
+                ---------------
+                in :interval
+                    default: 50
+                    range: 50~60000
+
+                Examples
+                -------
+
+                .. code-block:: python
+
+                    # 当翻页按键按下时，执行函数function
+                    @display1.event.button_pressed()
+                    def function():
+                        pass
+
+                    # 修改检测周期为100ms,当翻页按键按下时，执行函数function
+                    @display1.event.button_pressed(100)
+                    def function():
+                        pass
+
+                """
+            event = _return_event_start(
+                0,
+                EventManager._BOOL_VALUE_TYPE,
+                self.get_name('Press'),
+                numFlag=Display.BUTTON_M | 0x10)
+            return event._compare(EventManager._FALSE_TO_TRUE_ACTION, None,
+                                  interval)
+
+        # def buttonLongPressed(self, interval=50):
+        #     event = _return_event_start(
+        #         0,
+        #         EventManager._BOOL_VALUE_TYPE,
+        #         self.get_name('LPress'),
+        #         numFlag=Display.BUTTON_ML)
+        #     return event._compare(EventManager._FALSE_TO_TRUE_ACTION, None,
+        #                              interval)
+
+        def button_released(self, interval=50):
+            """
+                当翻页按键松开会执行事件修饰的函数
+
+                Parameters
+                ----------
+                interval : int
+                    表示每隔interval ms的时间检查值是否符合触发要求
+
+                Metas
+                ---------------
+                in :interval
+                    default: 50
+                    range: 50~60000
+
+                Examples
+                -------
+
+                .. code-block:: python
+
+                    # 当翻页按键松开时，执行函数function
+                    @display1.event.button_released()
+                    def function():
+                        pass
+
+                    # 修改检测周期为100ms,当翻页按键松开时，执行函数function
+                    @display1.event.button_released(100)
+                    def function():
+                        pass
+
+                """
+            event = _return_event_start(
+                0,
+                EventManager._BOOL_VALUE_TYPE,
+                self.get_name('Release'),
+                numFlag=0x1E)
+            return event._compare(EventManager._TRUE_TO_FALSE_ACTION, None,
+                                  interval)
+
+    class _Register(EventNameList):
+        def __init__(self, id, nameList):
+            EventNameList.__init__(self, Display, id, nameList)
+
+        def button(self, interval=50):
+            """
+                注册翻页按键值上传，当翻页按键状态改变会触发事件并接收到数据，返回类型为int
+
+                Parameters
+                ----------
+                interval : int
+                    表示每隔interval ms的时间检查值是否符合触发要求，如果符合会发送对应内容
+
+                Metas
+                ---------------
+                in :interval
+                    default: 50
+                    range: 50~60000
+
+                Examples
+                -------
+
+                .. code-block:: python
+
+                    # 注册翻页按键值上传
+                    display1.register.button()
+
+                    # 注册翻页按键值上传,并修改检测周期
+                    display1.register.button(100)
+
+                当满足触发条件时返回 
+                ``{"type":"event","module":"display1","source":"button","value":"2"}``
+
+                """
+            register = _return_event_start(0, EventManager._NUMBER_VALUE_TYPE,
+                                           self.get_name('button'))
+            register._register(EventManager._CHANGED_ACTION, 1, interval)
+
+    class _UnRegister(EventNameList):
+        def __init__(self, id, nameList):
+            EventNameList.__init__(self, Display, id, nameList)
+
+        def button(self):
+            """
+                注销翻页按键值上传
+
+                Examples
+                -------
+
+                .. code-block:: python
+
+                    # 注销按键状态上传
+                    display1.unregister.button()
+                
+                """
+            unregister = _return_event_start(0,
+                                             EventManager._NUMBER_VALUE_TYPE,
+                                             self.get_name('button'))
+            unregister._unregister()
 
     def __init__(self, id=1):
-        ModuleObj.__init__(self, id, 0x03)
+        ModuleObj.__init__(self, id - 1, DEVICE_TYPE['display'])
+        self._name_list = list()
+
         self._X = 1
         self._Y = 1
         self._data_own = [1]
         self._chart_x = [None for i in range(8)]
         self._chart_y = [None for i in range(8)]
 
-        # self._name_list = list()
-        # self.event = self._Event(id, self._name_list)
-        # self.register = self._Register(id, self._name_list)
-        # self.unregister = self._UnRegister(id, self._name_list)
+        self.event = self._Event(id, self._name_list)
+        self.register = self._Register(id, self._name_list)
+        self.unregister = self._UnRegister(id, self._name_list)
 
     def _get_data(self, frame):
 
         temp = _DataFormat('B')
         value = temp.get_data_list(frame[4:])[0]
+        # print(frame[4], value, 'end')
         self._data_own[0] = 0x01 << value if value < 4 else 0x08
 
-        # _set_event_value(self._name_list, self._data_own)
+        _set_event_value(self._name_list, self._data_own)
 
     def print(self, row, column, text, size=SIZE_SMALL):
         """
@@ -216,8 +448,8 @@ class Display(ModuleObj):
         self._send_without_ack(
             _TYPE_REQUEST,
             temp.get_list([
-                _CMD_OLED_DOT, x, 33 - y, 0, 0, page, Display._DRAW_NORMAL,
-                Display._COLOR_BLACK
+                _CMD_OLED_DOT, x, 33 - y, 0, 0, page, _DRAW_NORMAL,
+                _COLOR_BLACK
             ]))
 
     def draw_line(self, head_x, head_y, tail_x, tail_y, page=1):
@@ -280,7 +512,7 @@ class Display(ModuleObj):
             _TYPE_REQUEST,
             temp.get_list([
                 _CMD_OLED_LINE, head_x, 33 - head_y, tail_x, 33 - tail_y, page,
-                Display._DRAW_NORMAL, Display._COLOR_BLACK
+                _DRAW_NORMAL, _COLOR_BLACK
             ]))
 
     def draw_chart(self, x, y, page=1):
@@ -486,8 +718,7 @@ class Display(ModuleObj):
             """
         temp = _DataFormat('BB')
         self._send_without_ack(
-            _TYPE_REQUEST,
-            temp.get_list([_CMD_OLED_BUTTON, Display._BUTTON_DISABLE]))
+            _TYPE_REQUEST, temp.get_list([_CMD_OLED_BUTTON, _BUTTON_DISABLE]))
 
     def enable_page_turning(self):
         """
@@ -509,8 +740,7 @@ class Display(ModuleObj):
             """
         temp = _DataFormat('BB')
         self._send_without_ack(
-            _TYPE_REQUEST,
-            temp.get_list([_CMD_OLED_BUTTON, Display._BUTTON_ENABLE]))
+            _TYPE_REQUEST, temp.get_list([_CMD_OLED_BUTTON, _BUTTON_ENABLE]))
 
     def get_button_state(self):
         """
@@ -589,7 +819,7 @@ class Display(ModuleObj):
                         display1.set_direction_regular()
 
             """
-        self._set_direction(self._DIR_ROTATED)
+        self._set_direction(_DIR_ROTATED)
 
     def set_direction_regular(self):
         """
@@ -600,7 +830,7 @@ class Display(ModuleObj):
             未提供。可参考 `set_direction_reverse`_ 的使用案例
 
             """
-        self._set_direction(self._DIR_INITIAL)
+        self._set_direction(_DIR_INITIAL)
 
     def hide_scrollbar(self):
         """
@@ -800,8 +1030,7 @@ class Display(ModuleObj):
         self._send_without_ack(
             _TYPE_REQUEST,
             temp.get_list([
-                _CMD_OLED_DOT, x, 33 - y, 0, 0, page, Display._DRAW_SAVED,
-                Display._COLOR_BLACK
+                _CMD_OLED_DOT, x, 33 - y, 0, 0, page, _DRAW_SAVED, _COLOR_BLACK
             ]))
 
     def draw_save_line(self, head_x, head_y, tail_x, tail_y, page=1):
@@ -864,7 +1093,7 @@ class Display(ModuleObj):
             _TYPE_REQUEST,
             temp.get_list([
                 _CMD_OLED_LINE, head_x, 33 - head_y, tail_x, 33 - tail_y, page,
-                Display._DRAW_SAVED, Display._COLOR_BLACK
+                _DRAW_SAVED, _COLOR_BLACK
             ]))
 
     def draw_save_chart(self, x, y, page=1):

@@ -9,16 +9,17 @@ import wb
 # uart2 = UART(1, 125000)
 # uart2.init(125000, bits=8, parity=None, stop=1, tx=10, rx=9)
 
-def print_s(buf):
-    for data in buf:
-        print(data, end=',')
-    print(' ')
+# def print_s(buf):
+#     for data in buf:
+#         print(data, end=',')
+#     print(' ')
 
 flag = False
 button = Pin(26, Pin.IN, value=1, pull=Pin.PULL_UP)
 
 def distribute(t):
-    wb.module_manager.send_a_data(0)
+    # wb.send_a_data(0)
+    wb.hub.handle()
     if button.value() == 0:
         reset()
     while wb.hub.available():
@@ -31,8 +32,7 @@ def distribute(t):
         if buf[2] == _TYPE_INIT:
             wb.module_manager.put(buf)
         elif buf[2] == _TYPE_RESPONSE:
-            # _responseCache[buf[1]] = buf
-            pass
+            wb.hub.set_response(buf[1], buf)
         elif buf[2] == _TYPE_REPORT:
             mMag.doReport(buf[1], buf)
         elif buf[2] == _TYPE_INSERT and flag == True:
@@ -41,7 +41,7 @@ def distribute(t):
         #     print_s(buf[:(4 + buf[3])])
 
         # uart2.write('end')
-    wb.module_manager.send_a_data(0xFF)
+    # wb.send_a_data(0xFF)
 
 
 def getResponse(self, addr):

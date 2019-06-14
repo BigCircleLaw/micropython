@@ -1,6 +1,8 @@
 #include "stdint.h"
 #include "stdio.h"
 
+#include "driver/uart.h"
+
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
@@ -26,7 +28,6 @@ mp_obj_t frame_hub_get_msg(mp_obj_t self_in)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(frame_hub_get_msg_obj, frame_hub_get_msg);
 
-//定义DataFormat.get_send_list函数
 mp_obj_t frame_hub_available(mp_obj_t self_in)
 {
 
@@ -35,10 +36,69 @@ mp_obj_t frame_hub_available(mp_obj_t self_in)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(frame_hub_available_obj, frame_hub_available);
 
+static unsigned char receiver_data[512];
+mp_obj_t frame_hub_handle(mp_obj_t self_in)
+{
+    #if WONDERBITS_DEBUG
+        // printf("frame_hub_handle\n");
+    #endif
+    size_t num = uart_read_bytes(UART_NUM_1, receiver_data, 512, 0);
+    for(size_t i = 0; i < num; i++)
+    {
+        hub_put(receiver_data[i]);
+        #if WONDERBITS_DEBUG
+            // printf("0x%02x,", receiver_data[i]);
+        #endif
+    }
+
+    return MP_OBJ_NEW_SMALL_INT(num); //返回计算的结果
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(frame_hub_handle_obj, frame_hub_handle);
+
+mp_obj_t frame_hub_set_response(mp_obj_t self_in, mp_obj_t addr, mp_obj_t data)
+{
+
+#if WONDERBITS_DEBUG
+    printf("frame_hub_get_response\n");
+#endif
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
+
+    response_cache_set(mp_obj_get_int(addr), (unsigned char *)bufinfo.buf);
+
+
+    return mp_const_none; //返回计算的结果
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(frame_hub_set_response_obj, frame_hub_set_response);
+
+mp_obj_t frame_hub_get_response(mp_obj_t self_in, mp_obj_t addr)
+{
+
+#if WONDERBITS_DEBUG
+    printf("frame_hub_get_response\n");
+#endif
+
+    unsigned char *buf = response_cache_get(mp_obj_get_int(addr));
+    
+    if(NULL == buf)
+        return mp_const_none;
+    unsigned char len = 4 + buf[3];
+
+    mp_obj_array_t *result = MP_OBJ_TO_PTR(mp_obj_new_memoryview('B',
+                                                                 len,
+                                                                 buf));
+
+    return MP_OBJ_FROM_PTR(result); //返回计算的结果
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(frame_hub_get_response_obj, frame_hub_get_response);
+
 //定义type的locals_dict_type
 STATIC const mp_rom_map_elem_t frame_hub_locals_dict_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR_get_msg), MP_ROM_PTR(&frame_hub_get_msg_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_available), MP_ROM_PTR(&frame_hub_available_obj)},
+    {MP_OBJ_NEW_QSTR(MP_QSTR_handle), MP_ROM_PTR(&frame_hub_handle_obj)},
+    {MP_OBJ_NEW_QSTR(MP_QSTR_set_response), MP_ROM_PTR(&frame_hub_set_response_obj)},
+    {MP_OBJ_NEW_QSTR(MP_QSTR_get_response), MP_ROM_PTR(&frame_hub_get_response_obj)},
 };
 //这个定义字典的宏定义
 STATIC MP_DEFINE_CONST_DICT(frame_hub_locals_dict, frame_hub_locals_dict_table);

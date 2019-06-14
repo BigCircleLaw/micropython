@@ -67,3 +67,45 @@ unsigned char hub_available(void)
 {
    return num; 
 }
+
+#define HUB_RESPONSE_MAX 10
+
+static unsigned char response_cache_addr[HUB_RESPONSE_MAX];
+static unsigned char response_cache_buf[HUB_RESPONSE_MAX][MSG_MAX_LENGTH_ALL];
+static unsigned char response_cache_index = 0;
+
+void response_cache_set(unsigned char addr, unsigned char *data)
+{
+    response_cache_addr[response_cache_index] = addr;
+    
+    unsigned char len = data[3] + 4;
+    for(unsigned char i = 0; i < len; i++)
+    {
+        response_cache_buf[response_cache_index][i] = data[i];
+    }
+
+    response_cache_index = (response_cache_index + 1) % HUB_RESPONSE_MAX;
+}
+unsigned char *response_cache_get(unsigned char addr)
+{
+    for(unsigned char i = 0; i < HUB_RESPONSE_MAX; i++)
+    {
+        if(addr == response_cache_addr[i])
+        {
+            response_cache_addr[i] = Addr_Error;
+            return response_cache_buf[i];
+        }
+    }
+    return NULL;
+}
+
+void hub_init(void)
+{
+    index = 0;
+    head = 0;
+    tail = 0;
+    num = 0;
+    response_cache_index = 0;
+    for(unsigned char i = 0; i < HUB_RESPONSE_MAX; i++)
+        response_cache_addr[i] = Addr_Error;
+}

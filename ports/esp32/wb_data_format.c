@@ -19,18 +19,13 @@ STATIC mp_obj_list_t *new_list(size_t n)
     mp_obj_list_init(o, n);
     return o;
 }
-
+#define BUFFER_TRANSLATE_MAX 20
 typedef struct _data_format_content_t
 {
     mp_obj_base_t base; //定义的对象结构体要包含该成员
-    const char *receive_data;
-    size_t receive_len;
-
-    const unsigned char *send_data;
-    size_t send_len;
 
     unsigned char buffer[MSG_MAX_LENGTH_ALL];
-    char buffer_translate[10];
+    char buffer_translate[BUFFER_TRANSLATE_MAX];
     unsigned char len_translate;
 } data_format_content_t;
 
@@ -40,20 +35,29 @@ mp_obj_t data_format_get_receive_list(mp_obj_t self_in, mp_obj_t data)
     // module_obj_content_t *self=MP_OBJ_TO_PTR(self_in);  //从第一个参数里面取出对象的指针
     data_format_content_t *self = MP_OBJ_TO_PTR(self_in);
 
-    // self->receive_data = mp_obj_str_get_data(data, &(self->receive_len));
-    // printf("receive list\n");
+    #if WONDERBITS_DEBUG
+    printf("receive list\n");
+    #endif
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
     unsigned char count = 0;
     mp_obj_list_t *list = new_list(self->len_translate);
-
-    // printf("length : %d\n", self->len_translate);
+    
+    #if WONDERBITS_DEBUG
+    printf("length : %d\n", self->len_translate);
+    #endif
+    
     for (unsigned char i = 0; i < self->len_translate; i++)
     {
         list->items[i] = wb_add_list(self->buffer_translate[i], bufinfo.buf, &count, 0);
-        // printf("list : %c:%d\n", self->buffer_translate[i], ((unsigned char*)bufinfo.buf)[i]);
+        #if WONDERBITS_DEBUG
+        printf("list : %c:%d,", self->buffer_translate[i], ((unsigned char*)bufinfo.buf)[i]);
+        #endif
     }
-
+    #if WONDERBITS_DEBUG
+    printf("\n");
+    #endif
+    
     return MP_OBJ_FROM_PTR(list); //返回计算的结果
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(data_format_get_receive_list_obj, data_format_get_receive_list);
@@ -77,7 +81,6 @@ mp_obj_t data_format_get_send_list(mp_obj_t self_in, mp_obj_t data)
         printf("Format error!\n");
         return mp_const_none;
     }
-    // self->send_data = (const unsigned char *)mp_obj_str_get_data(data, &(self->send_len));
     for (unsigned char i = 0; i < len; i++)
     {
         if (wb_add_data(self->buffer_translate[i], self->buffer, list_items[i], &count))
@@ -119,7 +122,7 @@ STATIC mp_obj_t wonderbits_data_format_make_new(const mp_obj_type_t *type, size_
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
-    self->len_translate = 10 < bufinfo.len ? 10 : bufinfo.len;
+    self->len_translate = BUFFER_TRANSLATE_MAX < bufinfo.len ? BUFFER_TRANSLATE_MAX : bufinfo.len;
 
     ustrncpy((unsigned char *)self->buffer_translate, (unsigned char *)bufinfo.buf, self->len_translate);
 

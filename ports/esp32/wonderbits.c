@@ -9,11 +9,13 @@
 #include "wb-lib/uart.h"
 #include "wb-lib/module_manager.h"
 #include "wb-lib/led.h"
+#include "wb-lib/hub.h"
 
 STATIC mp_obj_t wonderbitd_init()
 {
     printf("This is wb init.\n");
     wb_uart_init();
+    hub_init();
     led_init();
     // module_manager_init();
     printf("Finish.\n");
@@ -45,6 +47,14 @@ STATIC mp_obj_t wb_constrain(mp_obj_t amt, mp_obj_t low, mp_obj_t high)
 
 STATIC const MP_DEFINE_CONST_FUN_OBJ_3(wb_constrain_obj,wb_constrain);
 
+mp_obj_t wb_module_manager_send_a_data(mp_obj_t data)
+{
+    // module_manager_content_t *self=MP_OBJ_TO_PTR(self_in);  //从第一个参数里面取出对象的指针
+    UART1_SendByte(mp_obj_get_int(data));
+    return mp_const_none; //返回计算的结果
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(module_manager_send_a_data_obj, wb_module_manager_send_a_data);
+
 extern const mp_obj_type_t wonderbits_data_format_type;
 extern const led_control_content_t mp_const_led_control_obj;
 extern const module_manager_content_t mp_const_module_manager_obj;
@@ -59,6 +69,7 @@ STATIC const mp_rom_map_elem_t wonderbits_globals_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR_led), MP_ROM_PTR(&mp_const_led_control_obj)}, 
     {MP_OBJ_NEW_QSTR(MP_QSTR_init), MP_ROM_PTR(&wonderbitd_init_obj)}, 
     {MP_OBJ_NEW_QSTR(MP_QSTR_constrain), MP_ROM_PTR(&wb_constrain_obj)}, 
+    {MP_OBJ_NEW_QSTR(MP_QSTR_send_a_data), MP_ROM_PTR(&module_manager_send_a_data_obj)},
 
     
     {MP_OBJ_NEW_QSTR(MP_QSTR__Addr_Master), MP_ROM_INT(Addr_Master)}, 

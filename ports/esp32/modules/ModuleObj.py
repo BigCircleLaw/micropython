@@ -4,7 +4,7 @@ from wb import _Addr_Error, _TYPE_REQUEST, _CMD_LED, _CMD_GET_VERSION
 
 from ModuleManager import moduleManager as mMag
 import time
-from wb import _DataFormat, module_manager
+from wb import _DataFormat, module_manager, hub
 
 
 class ModuleObj:
@@ -23,11 +23,11 @@ class ModuleObj:
         if self.dstAddr == _Addr_Error:
             return None
         module_manager.send_ack(self.dstAddr, type, data)
-        time.sleep_us(500)
+        # time.sleep_us(500)
         while timeout:
-            # response = hub.getResponse(self.dstAddr)
-            # if response != None:
-            #     return response
+            response = hub.get_response(self.dstAddr)
+            if response != None:
+                return response
             time.sleep_us(1000)
             timeout = timeout - 1
         return None
@@ -36,7 +36,7 @@ class ModuleObj:
         if self.dstAddr == _Addr_Error:
             return
         module_manager.send_ack(self.dstAddr, type, data)
-        time.sleep_us(500)
+        # time.sleep_us(500)
 
     def set_onboard_rgb(self, rgb):
         """
@@ -57,11 +57,12 @@ class ModuleObj:
         data = _DataFormat('BB')
         data = self._send_with_ack(_TYPE_REQUEST,
                                    data.get_list([_CMD_GET_VERSION, CMD]),
-                                   500)[5:]
+                                   500)
         if data == None:
             print('get_firmware_version fail!!!')
             return None
-        return data[0] * 100 + data[1] * 10 + data[2]
+        # return data
+        return data[4] * 100 + data[5] * 10 + data[6]
 
     def _do_update_value(self):
         pass

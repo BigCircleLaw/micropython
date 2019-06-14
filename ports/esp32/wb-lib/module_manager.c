@@ -34,34 +34,23 @@ static Module *listqueue = NULL;     //记录从机发上来的类型，UID。
 static ModuleStorage *list = NULL;   //对应类型存下UID
 static AddrStorage *addrData = NULL; //所有模块的地址存储这里
 static unsigned char addr_count = 0; //所有模块的地址数量
-static unsigned char type_count = 0; //所有模块的类型数量
+// static unsigned char type_buf[0] = 0; //所有模块的类型数量
 
+static unsigned char type_buf[200];
 
 unsigned char *module_manager_sendTypeAddrtoPC(void)
 {
     #if WONDERBITS_DEBUG
     printf("module_manager_sendTypeAddrtoPC\n");
-    printf("type_count: %d,", type_count);
-    #endif
-    unsigned char i;
-    unsigned char *sendPCBuffer = m_new(unsigned char, type_count * 2 + 1);
-    if(sendPCBuffer == NULL)
-        return NULL;
-    unsigned char position = 0;
-    sendPCBuffer[position++] = type_count;
-    for (i = 0; i < type_count; i++)
+    printf("type_buf[0]: %d,", type_buf[0]);
+    for (unsigned char i = 0; i < type_buf[0]; i++)
     {
-        sendPCBuffer[position++] = num[i].type;
-        sendPCBuffer[position++] = num[i].num;
-        #if WONDERBITS_DEBUG
         printf("type: %d,", num[i].type);
         printf("num: %d,", num[i].num);
-        #endif
     }
-    #if WONDERBITS_DEBUG
     printf("\n");
     #endif
-    return sendPCBuffer;
+    return type_buf;
 }
 
 unsigned char module_manager_getAddr(unsigned char id, unsigned char type)
@@ -69,10 +58,10 @@ unsigned char module_manager_getAddr(unsigned char id, unsigned char type)
 #if WONDERBITS_DEBUG
     printf("module_manager_getAddr\n");
     printf("type: %d, id: %d\n", type, id);
-    printf("type_count: %d\n", type_count);
+    printf("type_buf[0]: %d\n", type_buf[0]);
 #endif
     unsigned char addrCount = 0;
-    for (unsigned char i_type = 0; i_type < type_count; i_type++)
+    for (unsigned char i_type = 0; i_type < type_buf[0]; i_type++)
     {
         #if WONDERBITS_DEBUG
         printf("type: %d, num: %d\n", num[i_type].type, num[i_type].num);
@@ -162,11 +151,11 @@ void module_manager_getlist(void)
     {
         if (typeNum[i] != 0)
         {
-            type_count += 1;
+            type_buf[0] += 1;
         }
     }
-    // UART1_SendByte(type_count);
-    num = m_new(TypeStorage, type_count);
+    // UART1_SendByte(type_buf[0]);
+    num = (TypeStorage *)&type_buf[1];
     unsigned char j = 0;
     for (i = 0; i < MODULE_TYPE_MAX; i++)
     {
@@ -254,7 +243,7 @@ void module_manager_sendID(void)
     int i, j = 0, i_type = 0, j_num = 0;
     unsigned char data[bufSendLen + 1];
     //  UART1_SendByte(num[i_type]);
-    for (i_type = 0; i_type < type_count; i_type++)
+    for (i_type = 0; i_type < type_buf[0]; i_type++)
     {
         for (j_num = 0; j_num < num[i_type].num; j_num++)
         {
@@ -286,7 +275,7 @@ void module_manager_sendID(void)
 void module_manager_loadID(void)
 {
     unsigned char j_num = 0;
-    addrData = m_new(AddrStorage, addr_count);
+    addrData = (AddrStorage *)&type_buf[type_buf[0] * 2 + 1];
     if (NULL == addrData)
         return;
     module_manager_base_addr = MODULE_ADDR_Start;
@@ -304,7 +293,11 @@ void module_manager_init(void)
     unsigned char i;
     unsigned char cmd = CMD_ASK_UID;
     //init...
-
+    #if WONDERBITS_DEBUG
+    printf("module_manager_init\n");
+    #endif
+    addr_count = 0;
+    type_buf[0] = 0;
     // mp_hal_delay_ms(100);
     led_set_color(RGB_OFF);
     sendACK(Addr_Broadcast, TYPE_INIT, &cmd, 1);
@@ -319,9 +312,21 @@ void module_manager_init(void)
     }
 
     led_set_color(RGB_LB);
+    #if WONDERBITS_DEBUG
+    printf("module_manager_put finished\n");
+    #endif
     module_manager_getlist();
+    #if WONDERBITS_DEBUG
+    printf("module_manager_getlist finished\n");
+    #endif
     module_manager_sort();
+    #if WONDERBITS_DEBUG
+    printf("module_manager_sort finished\n");
+    #endif
     module_manager_loadID();
+    #if WONDERBITS_DEBUG
+    printf("module_manager_loadID finished\n");
+    #endif
 
     // configurationVersion();
 }

@@ -67,20 +67,10 @@ mp_obj_t wb_module_manager_get_type_num_buf(mp_obj_t self_in)
         return mp_const_none;
     }
     mp_obj_t ptr = mp_obj_new_bytes((const unsigned char *)data, data[0] * 2 + 1);
-    // UART1_SendByte(3);
-    m_free(data);
-    // UART1_SendByte(4);
     return ptr; //返回计算的结果
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(module_manager_get_type_num_buf_obj, wb_module_manager_get_type_num_buf);
 
-mp_obj_t wb_module_manager_send_a_data(mp_obj_t self_in, mp_obj_t data)
-{
-    // module_manager_content_t *self=MP_OBJ_TO_PTR(self_in);  //从第一个参数里面取出对象的指针
-    UART1_SendByte(mp_obj_get_int(data));
-    return mp_const_none; //返回计算的结果
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(module_manager_send_a_data_obj, wb_module_manager_send_a_data);
 //定义type的locals_dict_type
 STATIC const mp_rom_map_elem_t module_manager_locals_dict_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR_send_ack), MP_ROM_PTR(&module_send_ack_obj)},
@@ -88,7 +78,6 @@ STATIC const mp_rom_map_elem_t module_manager_locals_dict_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR_put), MP_ROM_PTR(&module_manager_put_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_get_addr), MP_ROM_PTR(&module_manager_get_addr_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_get_type_num_buf), MP_ROM_PTR(&module_manager_get_type_num_buf_obj)},
-    {MP_OBJ_NEW_QSTR(MP_QSTR_send_a_data), MP_ROM_PTR(&module_manager_send_a_data_obj)},
 };
 //这个定义字典的宏定义
 STATIC MP_DEFINE_CONST_DICT(module_manager_locals_dict, module_manager_locals_dict_table);

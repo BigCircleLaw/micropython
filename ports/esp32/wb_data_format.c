@@ -211,19 +211,40 @@ static bool wb_add_data(unsigned char val_type, unsigned char *buf, mp_obj_t dat
     unsigned char count = *num;
     // unsigned char size = 0;
     // unsigned char temp[4] = {0, 0, 0, 0};
+    float val_float = 0;
+    switch (val_type)
+    {
+        case 'b':
+        case 'B':
+        case 'h':
+        case 'H':
+        case 'i':
+        case 'I':
+        case 'l':
+        case 'L':
+        case 'f':
+        if( !(mp_obj_get_float_maybe(data, &val_float)) )
+        {
+            printf("parameter is not number! ");
+            return true;
+        }
+        break;
+        default :;
+
+    }
     switch (val_type)
     {
     case 'b':
     case 'B':
     {
-        buf[count++] = mp_obj_get_int(data);
+        buf[count++] = (unsigned char)val_float;
         *num = count;
         break;
     }
     case 'h':
     case 'H':
     {
-        short val = mp_obj_get_int(data);
+        short val = (short)val_float;
         ustrncpy((buf + count), (unsigned char *)&val, 2);
         *num = count + 2;
         break;
@@ -231,7 +252,7 @@ static bool wb_add_data(unsigned char val_type, unsigned char *buf, mp_obj_t dat
     case 'i':
     case 'I':
     {
-        int val = mp_obj_get_int(data);
+        int val = (int)val_float;
         ustrncpy((buf + count), (unsigned char *)&val, 4);
         *num = count + 4;
         break;
@@ -239,7 +260,7 @@ static bool wb_add_data(unsigned char val_type, unsigned char *buf, mp_obj_t dat
     case 'l':
     case 'L':
     {
-        long val = mp_obj_get_int(data);
+        long val = (long)val_float;
         ustrncpy((buf + count), (unsigned char *)&val, 4);
         *num = count + 4;
         break;
@@ -265,17 +286,9 @@ static bool wb_add_data(unsigned char val_type, unsigned char *buf, mp_obj_t dat
     }
     case 'f':
     {
-        float val;
-        if (mp_obj_get_float_maybe(data, &val))
-        {
-            ustrncpy((buf + count), (unsigned char *)&val, sizeof(float));
-            *num = count + sizeof(float);
-        }
-        else
-        {
-            return true;
-        }
-
+        float val = val_float;
+        ustrncpy((buf + count), (unsigned char *)&val, sizeof(float));
+        *num = count + sizeof(float);
         break;
     }
         // case 'd':

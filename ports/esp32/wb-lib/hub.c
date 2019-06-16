@@ -65,7 +65,9 @@ unsigned char * hub_distribute(void)
 
 unsigned char hub_available(void)
 {
-   return num; 
+    // UART1_SendByte(0xF0);
+    // UART1_SendByte(num);
+    return num; 
 }
 
 #define HUB_RESPONSE_MAX 10

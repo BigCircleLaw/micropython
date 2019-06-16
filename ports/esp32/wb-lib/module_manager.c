@@ -40,7 +40,7 @@ static unsigned char type_buf[200];
 
 unsigned char *module_manager_sendTypeAddrtoPC(void)
 {
-    #if WONDERBITS_DEBUG
+#if WONDERBITS_DEBUG
     printf("module_manager_sendTypeAddrtoPC\n");
     printf("type_buf[0]: %d,", type_buf[0]);
     for (unsigned char i = 0; i < type_buf[0]; i++)
@@ -49,7 +49,7 @@ unsigned char *module_manager_sendTypeAddrtoPC(void)
         printf("num: %d,", num[i].num);
     }
     printf("\n");
-    #endif
+#endif
     return type_buf;
 }
 
@@ -63,14 +63,14 @@ unsigned char module_manager_getAddr(unsigned char id, unsigned char type)
     unsigned char addrCount = 0;
     for (unsigned char i_type = 0; i_type < type_buf[0]; i_type++)
     {
-        #if WONDERBITS_DEBUG
+#if WONDERBITS_DEBUG
         printf("type: %d, num: %d\n", num[i_type].type, num[i_type].num);
-        #endif
+#endif
         if ((type == num[i_type].type) && (id <= num[i_type].num))
         {
-            #if WONDERBITS_DEBUG
+#if WONDERBITS_DEBUG
             printf("addr: %d\n", addrData[addrCount + id].addr);
-            #endif
+#endif
             // addrData[addrCount + id - 1].flag = 1;
             return addrData[addrCount + id].addr;
         }
@@ -129,101 +129,67 @@ void module_manager_put(unsigned char *uid, unsigned char len)
     // Uart_send(listqueue->uid, len);
 
     addr_count++;
+    // UART1_SendByte(addr_count);
 }
 
 void module_manager_getlist(void)
 {
-    unsigned char i;
-    unsigned char typeNum[MODULE_TYPE_MAX];
-    // UART1_SendByte(MODULE_TYPE_MAX);
-    for (i = 0; i < MODULE_TYPE_MAX; i++)
-    {
-        typeNum[i] = 0;
-    }
-    listqueue = listHead;
-    while (listqueue != NULL)
-    {
-        typeNum[listqueue->uid[0]] += 1;
-        // UART1_SendByte(listqueue->uid[0]);
-        listqueue = listqueue->next;
-    }
-    for (i = 0; i < MODULE_TYPE_MAX; i++)
-    {
-        if (typeNum[i] != 0)
-        {
-            type_buf[0] += 1;
-        }
-    }
-    // UART1_SendByte(type_buf[0]);
-    num = (TypeStorage *)&type_buf[1];
-    unsigned char j = 0;
-    for (i = 0; i < MODULE_TYPE_MAX; i++)
-    {
-        if (typeNum[i] != 0)
-        {
-            num[j].type = i;
-            num[j].num = typeNum[i];
-            // UART1_SendByte(i);
-            // UART1_SendByte(typeNum[i]);
-            j += 1;
-        }
-    }
-    ////////////////////////////////////////////////////////////////////////
-    // j = 0;
-    // for (i = 0; i < MODULE_TYPE_MAX; i++)
-    // {
-    //     typeNum[i] = 0;
-    // }
-
-    // definedModuleLinkList.tail = definedModuleLinkList.head;
-    // while (definedModuleLinkList.tail != NULL)
-    // {
-    //     typeNum[definedModuleLinkList.tail->type] += 1;
-    //     definedModuleLinkList.tail = definedModuleLinkList.tail->next;
-    // }
-    /********************************************************************************************/
-    //计算用户定义的每种类型模块的数量
-    // for (i = 0; i < MODULE_TYPE_MAX; i++)
-    // {
-    //   if (typeNum[i] != 0)
-    //   {
-    //     definedModuleType_count += 1;
-    //   }
-    // }
-    // definedModuleTypeNum = new TypeStorage[definedModuleType_count];
-
-    // for (i = 0; i < MODULE_TYPE_MAX; i++)
-    // {
-    //   if (typeNum[i] != 0)
-    //   {
-    //     definedModuleTypeNum[j].type = i;
-    //     definedModuleTypeNum[j].num = typeNum[i];
-    //     j += 1;
-    //   }
-    // }
-    /********************************************************************************************/
-    ///////////////////////////////////////////////////////////////////////
     list = m_new(ModuleStorage, addr_count);
     if (NULL == list)
         return;
     // UART1_SendByte(addr_count);
-    j = 0;
+
+    if (addr_count <= 0)
+        return;
+    int j = 0;
     listqueue = listHead;
 
     while (listqueue != NULL)
     {
-        list[j].uid = m_new(unsigned char, bufSendLen);
-        // if (list[j].uid == NULL)
-        //   return;
+        list[j].uid = listqueue->uid;
 
-        ustrncpy(list[j].uid, listqueue->uid, bufSendLen);
-        //      UART1_SendByte(j);
         listqueue = listqueue->next;
-        m_free(listHead->uid);
+
         listHead->uid = NULL;
         m_free(listHead);
         listHead = listqueue;
         j++;
+    }
+    num = (TypeStorage *)&type_buf[1];
+    int i = 0;
+    for (i = 0; i < addr_count; i++)
+    {
+        num[i].type = 0xFF;
+        // num[i].num = 0;
+    }
+    num[0].type = list[0].uid[0];
+    num[0].num = 1;
+    type_buf[0] = 1;
+    // UART1_SendByte(num[0].type);
+    for (i = 1; i < addr_count; i++)
+    {
+        unsigned char type_val = list[i].uid[0];
+        // UART1_SendByte(type_val);
+
+        for (j = i - 1; (j >= 0) && (type_val < num[j].type); j--)
+        {
+            num[j + 1] = num[j];
+        }
+        if ( (type_val == num[j].type) && (j >= 0) )
+        {
+            num[j].num++;
+        }
+        else
+        {
+            num[j + 1].type = type_val;
+            num[j + 1].num = 1;
+            type_buf[0]++;
+        }
+    }
+    for (i = 0; i < addr_count; i++)
+    {
+        UART1_SendByte(num[i].type);
+        UART1_SendByte(num[i].num);
     }
 }
 
@@ -242,9 +208,11 @@ void module_manager_sendID(void)
     //  const unsigned char sendID_Len = 14;
     int i, j = 0, i_type = 0, j_num = 0;
     unsigned char data[bufSendLen + 1];
-    //  UART1_SendByte(num[i_type]);
+    // UART1_SendByte(type_buf[0]);
     for (i_type = 0; i_type < type_buf[0]; i_type++)
     {
+        // UART1_SendByte(num[i_type].type);
+        // UART1_SendByte(num[i_type].num);
         for (j_num = 0; j_num < num[i_type].num; j_num++)
         {
             data[0] = addrData[j].addr;
@@ -292,10 +260,15 @@ void module_manager_init(void)
 {
     unsigned char i;
     unsigned char cmd = CMD_ASK_UID;
-    //init...
-    #if WONDERBITS_DEBUG
+//init...
+#if WONDERBITS_DEBUG
     printf("module_manager_init\n");
-    #endif
+#endif
+    num = NULL;       //该种类连接在主机上的数量
+    listHead = NULL;  //listqueue的头地址
+    listqueue = NULL; //记录从机发上来的类型，UID。
+    list = NULL;      //对应类型存下UID
+    addrData = NULL;
     addr_count = 0;
     type_buf[0] = 0;
     // mp_hal_delay_ms(100);
@@ -312,49 +285,21 @@ void module_manager_init(void)
     }
 
     led_set_color(RGB_LB);
-    #if WONDERBITS_DEBUG
+#if WONDERBITS_DEBUG
     printf("module_manager_put finished\n");
-    #endif
+#endif
     module_manager_getlist();
-    #if WONDERBITS_DEBUG
+#if WONDERBITS_DEBUG
     printf("module_manager_getlist finished\n");
-    #endif
+#endif
     module_manager_sort();
-    #if WONDERBITS_DEBUG
+#if WONDERBITS_DEBUG
     printf("module_manager_sort finished\n");
-    #endif
+#endif
     module_manager_loadID();
-    #if WONDERBITS_DEBUG
+#if WONDERBITS_DEBUG
     printf("module_manager_loadID finished\n");
-    #endif
+#endif
 
     // configurationVersion();
-}
-
-void module_manager_doReport(unsigned char id, unsigned char *data)
-{
-    // definedModuleLinkList.tail = definedModuleLinkList.head;
-    // while (definedModuleLinkList.tail != NULL)
-    // {
-    //     if (definedModuleLinkList.tail->des_addr == id)
-    //     {
-    //         // definedModuleLinkList.tail->getData(data);
-    //         return; //
-    //     }
-    //     definedModuleLinkList.tail = definedModuleLinkList.tail->next;
-    // }
-}
-void module_manager_doUpdate(void)
-{
-    // definedModuleLinkList.tail = definedModuleLinkList.head;
-    // while (definedModuleLinkList.tail != NULL)
-    // {
-    //     // definedModuleLinkList.tail->doUpdateValue();
-    //     definedModuleLinkList.tail = definedModuleLinkList.tail->next;
-    // }
-}
-
-unsigned char module_manager_getSendBufLength(void)
-{
-    return bufSendLen;
 }

@@ -20,6 +20,9 @@ button = Pin(26, Pin.IN, value=1, pull=Pin.PULL_UP)
 def distribute(t):
     # wb.send_a_data(0)
     wb.hub.handle()
+    # if flag == False:
+    #     wb.send_a_data(0xF0)
+    #     wb.send_a_data(wb.hub.available())
     if button.value() == 0:
         reset()
     while wb.hub.available():

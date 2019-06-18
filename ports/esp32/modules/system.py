@@ -4,7 +4,6 @@ import wb
 import framehub
 import time
 from ModuleManager import moduleManager as mMag
-from public import DEVICE_TYPE
 import gc
 
 tim_hub = Timer(1)
@@ -16,6 +15,8 @@ wb.init()
 wb.module_manager.start()
 
 print(time.ticks_ms())
+
+from public import DEVICE_TYPE
 
 _m_info = wb.module_manager.get_type_num_buf()
 # print(_m_info)
@@ -44,9 +45,9 @@ for i in range(_m_info[0]):
         #         # print(mStr)
         del mStr
         del j
-#     else:
-#         _m_value_position = _m_value_position + 2
-# # del i
+    else:
+        _m_value_position = _m_value_position + 2
+        print('not support module!')
 
 mf.close()
 del mf

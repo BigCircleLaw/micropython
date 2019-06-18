@@ -186,11 +186,11 @@ void module_manager_getlist(void)
             type_buf[0]++;
         }
     }
-    for (i = 0; i < addr_count; i++)
-    {
-        UART1_SendByte(num[i].type);
-        UART1_SendByte(num[i].num);
-    }
+    // for (i = 0; i < addr_count; i++)
+    // {
+    //     UART1_SendByte(num[i].type);
+    //     UART1_SendByte(num[i].num);
+    // }
 }
 
 void module_manager_sort(void)

@@ -152,7 +152,8 @@ class EventManager:
             # if self.valueType == self._NUMBER_VALUE_TYPE:
             #     send_str = send_str + \
             #         str(delta if delta != None else self.varyValue)
-
+            # print(send_str, end_str)
+            # print(self.valueType, actionType)
             def event_task_run():
                 ownData = self.originalValue
                 while True:
@@ -165,7 +166,7 @@ class EventManager:
                                 send_str, ((ownData & self.numFlag) != 0),
                                 end_str,
                                 sep='')
-                        if self.valueType == self._LIST_VALUE_TYPE:
+                        elif self.valueType == self._LIST_VALUE_TYPE:
                             print(
                                 send_str,
                                 ','.join(map(str, ownData)),
@@ -249,16 +250,17 @@ def _set_event_value(eventNameList, valueList, select=None):
 
 
 class EventNameList:
-    def __init__(self, module, id, nameList):
+    def __init__(self, module, id, name_list=None):
         # self.module = module
         # self.id = id
         self.name_dict = module.__module__[0].lower(
         ) + module.__module__[1:] + str(id)
-        self.event_name = nameList
+        self.event_name = name_list
 
-    def get_name(self, valueName):
+    def get_name(self, valueName, name_list=None):
         name = self.name_dict + valueName
-        if name not in self.event_name:
-            self.event_name.append(name)
+        temp = name_list if self.event_name == None else self.event_name
+        if name not in temp:
+            temp.append(name)
 
         return name, self.name_dict, valueName

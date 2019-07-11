@@ -2,21 +2,23 @@ import time
 from machine import reset
 print(time.ticks_ms())
 import system
-# import gc
+import os
+import gc
 
 print(time.ticks_ms())
-from sysCfg import *
+if 'run_loop.py' in os.listdir():
+    exec('import run_loop')
+else:
+    exec('from wonderbits import *')
 
 print(time.ticks_ms())
-# import machine, time
-# from connectWeb import webrepl_start
-# from system import sysInit, getModuleInformation
-# from wb_sys import *
+
 
 from public import RGB_R, RGB_B, RGB_G, RGB_LB, RGB_OFF, RGB_P, RGB_W, RGB_Y
 
 from EventManager import event
 
-# gc.collect()
+del os
+gc.collect()
 
-# del gc
+del gc

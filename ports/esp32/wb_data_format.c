@@ -35,29 +35,29 @@ mp_obj_t data_format_get_receive_list(mp_obj_t self_in, mp_obj_t data)
     // module_obj_content_t *self=MP_OBJ_TO_PTR(self_in);  //从第一个参数里面取出对象的指针
     data_format_content_t *self = MP_OBJ_TO_PTR(self_in);
 
-    #if WONDERBITS_DEBUG
+#if WONDERBITS_DEBUG
     printf("receive list\n");
-    #endif
+#endif
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
     unsigned char count = 0;
     mp_obj_list_t *list = new_list(self->len_translate);
-    
-    #if WONDERBITS_DEBUG
+
+#if WONDERBITS_DEBUG
     printf("length : %d\n", self->len_translate);
-    #endif
-    
+#endif
+
     for (unsigned char i = 0; i < self->len_translate; i++)
     {
         list->items[i] = wb_add_list(self->buffer_translate[i], bufinfo.buf, &count, 0);
-        #if WONDERBITS_DEBUG
-        printf("list : %c:%d,", self->buffer_translate[i], ((unsigned char*)bufinfo.buf)[i]);
-        #endif
+#if WONDERBITS_DEBUG
+        printf("list : %c:%d,", self->buffer_translate[i], ((unsigned char *)bufinfo.buf)[i]);
+#endif
     }
-    #if WONDERBITS_DEBUG
+#if WONDERBITS_DEBUG
     printf("\n");
-    #endif
-    
+#endif
+
     return MP_OBJ_FROM_PTR(list); //返回计算的结果
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(data_format_get_receive_list_obj, data_format_get_receive_list);
@@ -214,23 +214,22 @@ static bool wb_add_data(unsigned char val_type, unsigned char *buf, mp_obj_t dat
     float val_float = 0;
     switch (val_type)
     {
-        case 'b':
-        case 'B':
-        case 'h':
-        case 'H':
-        case 'i':
-        case 'I':
-        case 'l':
-        case 'L':
-        case 'f':
-        if( !(mp_obj_get_float_maybe(data, &val_float)) )
+    case 'b':
+    case 'B':
+    case 'h':
+    case 'H':
+    case 'i':
+    case 'I':
+    case 'l':
+    case 'L':
+    case 'f':
+        if (!(mp_obj_get_float_maybe(data, &val_float)))
         {
             printf("parameter is not number! ");
             return true;
         }
         break;
-        default :;
-
+    default:;
     }
     switch (val_type)
     {

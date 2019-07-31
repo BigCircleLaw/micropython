@@ -4,7 +4,7 @@ from system import _module_info
 from public import DEVICE_TYPE
 import os
 
-state = 'run_loop.py' not in os.listdir()
+state = 'main.py' not in os.listdir()
 
 _m_info = wb.module_manager.get_type_num_buf()
 # print(_m_info)
@@ -30,7 +30,7 @@ for i in range(_m_info[0]):
         _m_value_position = _m_value_position + 1
         del mStr
     else:
-        print('not support module : ', _m_info[_m_value_position], ' !')
+        print('not support module :', _m_info[_m_value_position], '!')
         _m_value_position = _m_value_position + 2
 
 del _m_info
@@ -43,3 +43,16 @@ del i
 del mMag
 del DEVICE_TYPE
 del mStr2
+
+class wb_tool(object):
+    """
+    豌豆拼工具集合
+    """
+
+    @staticmethod
+    def show_console():
+        pass
+
+    @staticmethod
+    def hide_console():
+        pass

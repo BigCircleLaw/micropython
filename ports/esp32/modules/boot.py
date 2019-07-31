@@ -6,9 +6,7 @@ import os
 import gc
 
 print(time.ticks_ms())
-if 'run_loop.py' in os.listdir():
-    exec('import run_loop')
-else:
+if 'main.py' not in os.listdir():
     exec('from wonderbits import *')
 
 print(time.ticks_ms())

@@ -17,11 +17,15 @@ class ModuleManager:
         self.moduleExistsTypeCount = {}
         self.newModuleFlag = 0
         self.addrData = {}
-   
+
     def defineNewModule(self, newModule):
         self.definedModuleList.append(newModule)
 
-
+    def findModuleList(self, id, type):
+        for module in self.definedModuleList:
+            if (id == module.Id) and (type == module.Type):
+                return True, module
+        return False, None
 
     def doReport(self, id, data):
         for module in self.definedModuleList:
@@ -34,5 +38,6 @@ class ModuleManager:
     def doUpdate(self):
         for module in self.definedModuleList:
             module._do_update_value()
+
 
 moduleManager = ModuleManager()

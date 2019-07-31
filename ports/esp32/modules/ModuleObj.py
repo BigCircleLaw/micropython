@@ -9,12 +9,18 @@ from wb import _DataFormat, module_manager, hub
 
 class ModuleObj:
     def __init__(self, Id, Type):
-        self.Id = Id
-        self.Type = Type
-        # self.dstAddr = _Addr_Error
-        self.dstAddr = module_manager.get_addr(self.Id, self.Type)
-        # print(self.Id, self.Type, self.dstAddr)
-        mMag.defineNewModule(self)
+        state, module = mMag.findModuleList(Id, Type)
+        if state:
+            self = module
+            self.state = False
+        else:
+            self.Id = Id
+            self.Type = Type
+            # self.dstAddr = _Addr_Error
+            self.dstAddr = module_manager.get_addr(self.Id, self.Type)
+            self.state = True
+            # print(self.Id, self.Type, self.dstAddr)
+            mMag.defineNewModule(self)
 
     # def setAddr(self):
     #     self.dstAddr = module_manager.get_addr(self.Id, self.Type)
@@ -56,8 +62,7 @@ class ModuleObj:
     def get_firmware_version(self, CMD=0):
         data = _DataFormat('BB')
         data = self._send_with_ack(_TYPE_REQUEST,
-                                   data.get_list([_CMD_GET_VERSION, CMD]),
-                                   500)
+                                   data.get_list([_CMD_GET_VERSION, CMD]), 500)
         if data == None:
             print('get_firmware_version fail!!!')
             return None

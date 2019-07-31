@@ -20,12 +20,12 @@ for i in range(_m_info[0]):
         _m_value_position = _m_value_position + 1
         exec('from ' + mStr2 + ' import ' + mStr2)
         # print('from ' + mStr2 + ' import ' + mStr2)
-        if state:
-            for j in range(_m_info[_m_value_position]):
-                exec(mStr + str(j + 1) + '=' + mStr2 + '(' + str(j + 1) + ')')
-                # print(mStr + str(j + 1) + '=' + mStr2 + '(' + str(j + 1) + ')')
-                _module_info.append(mStr + str(j + 1))
-            del j
+        # if state:
+        for j in range(_m_info[_m_value_position]):
+            exec(mStr + str(j + 1) + '=' + mStr2 + '(' + str(j + 1) + ')')
+            # print(mStr + str(j + 1) + '=' + mStr2 + '(' + str(j + 1) + ')')
+            _module_info.append(mStr + str(j + 1))
+        del j
 
         _m_value_position = _m_value_position + 1
         del mStr
@@ -43,6 +43,7 @@ del i
 del mMag
 del DEVICE_TYPE
 del mStr2
+
 
 class wb_tool(object):
     """

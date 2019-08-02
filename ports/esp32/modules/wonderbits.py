@@ -39,10 +39,8 @@ del _module_value_list
 del _m_value_position
 
 del wb
-del i
 del mMag
 del DEVICE_TYPE
-del mStr2
 
 
 class wb_tool(object):

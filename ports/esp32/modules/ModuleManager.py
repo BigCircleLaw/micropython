@@ -21,18 +21,16 @@ class ModuleManager:
     def defineNewModule(self, newModule):
         self.definedModuleList.append(newModule)
 
-    def findModuleList(self, id, type):
+    def findModuleList(self, ID, type):
         for module in self.definedModuleList:
-            if (id == module.Id) and (type == module.Type):
+            if (ID == module.id) and (type == module.Type):
                 return True, module
         return False, None
 
-    def doReport(self, id, data):
+    def doReport(self, ID, data):
         for module in self.definedModuleList:
-            if id == module.dstAddr:
-                # uart2.write('s')
+            if ID == module.dstAddr:
                 module._get_data(data)
-                # uart2.write('e')
                 break
 
     def doUpdate(self):

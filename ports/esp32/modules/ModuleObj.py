@@ -7,23 +7,25 @@ import time
 from wb import _DataFormat, module_manager, hub
 
 
-class ModuleObj:
-    def __init__(self, Id, Type):
-        state, module = mMag.findModuleList(Id, Type)
+class ModuleObj(object):
+    def __new__(cls, Id=1):
+        Id = Id - 1
+        state, module = mMag.findModuleList(Id, cls.Type)
         if state:
-            self = module
-            self.state = False
+            module.state = False
         else:
-            self.Id = Id
-            self.Type = Type
-            # self.dstAddr = _Addr_Error
-            self.dstAddr = module_manager.get_addr(self.Id, self.Type)
-            self.state = True
-            # print(self.Id, self.Type, self.dstAddr)
-            mMag.defineNewModule(self)
+            module = object.__new__(cls)
+            module.state = True
+        return module
 
-    # def setAddr(self):
-    #     self.dstAddr = module_manager.get_addr(self.Id, self.Type)
+    def __init__(self, Id):
+
+        if self.state:
+            self.id = Id
+            # self.dstAddr = _Addr_Error
+            self.dstAddr = module_manager.get_addr(self.id, self.Type)
+            self.state = True
+            mMag.defineNewModule(self)
 
     def _send_with_ack(self, type, data, timeout):
         if self.dstAddr == _Addr_Error:

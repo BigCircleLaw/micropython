@@ -250,11 +250,11 @@ def _set_event_value(eventNameList, valueList, select=None):
 
 
 class EventNameList:
-    def __init__(self, module, id, name_list=None):
+    def __init__(self, module, ID, name_list=None):
         # self.module = module
-        # self.id = id
+        # self.ID = ID
         self.name_dict = module.__module__[0].lower(
-        ) + module.__module__[1:] + str(id)
+        ) + module.__module__[1:] + str(ID)
         self.event_name = name_list
 
     def get_name(self, valueName, name_list=None):

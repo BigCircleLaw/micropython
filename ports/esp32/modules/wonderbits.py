@@ -1,7 +1,7 @@
 import wb
 from ModuleManager import moduleManager as mMag
 from system import _module_info
-from public import DEVICE_TYPE
+from public import DEVICE_TYPE, __version__
 import os
 
 state = 'main.py' not in os.listdir()

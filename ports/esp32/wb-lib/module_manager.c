@@ -166,31 +166,60 @@ void module_manager_getlist(void)
     num[0].num = 1;
     type_buf[0] = 1;
     // UART1_SendByte(num[0].type);
+    // for (i = 1; i < addr_count; i++)
+    // {
+    //     unsigned char type_val = list[i].uid[0];
+    //     // UART1_SendByte(type_val);
+
+    //     for (j = i - 1; (j >= 0) && (type_val < num[j].type); j--)
+    //     {
+    //         num[j + 1] = num[j];
+    //     }
+    //     if ((type_val == num[j].type) && (j >= 0))
+    //     {
+    //         num[j].num++;
+    //     }
+    //     else
+    //     {
+    //         num[j + 1].type = type_val;
+    //         num[j + 1].num = 1;
+    //         type_buf[0]++;
+    //     }
+    // }
     for (i = 1; i < addr_count; i++)
     {
-        unsigned char type_val = list[i].uid[0];
-        // UART1_SendByte(type_val);
+        unsigned char type_val = list[i].uid[0], current_type;
 
-        for (j = i - 1; (j >= 0) && (type_val < num[j].type); j--)
+        for (j = 0; (j < type_buf[0]); j++)
         {
-            num[j + 1] = num[j];
+            if (type_val < (current_type = num[j].type))
+            {
+                for (unsigned char k = type_buf[0]; k > j; k--)
+                {
+                    num[k] = num[k - 1];
+                }
+                num[j].type = type_val;
+                num[j].num = 1;
+                type_buf[0]++;
+                break;
+            }
+            if (type_val == current_type)
+            {
+                num[j].num++;
+                break;
+            }
+            // num[j + 1] = num[j];
         }
-        if ( (type_val == num[j].type) && (j >= 0) )
+        if (j >= type_buf[0])
         {
-            num[j].num++;
-        }
-        else
-        {
-            num[j + 1].type = type_val;
-            num[j + 1].num = 1;
-            type_buf[0]++;
+            // if ((type_val > current_type))
+            {
+                num[j].type = type_val;
+                num[j].num = 1;
+                type_buf[0]++;
+            }
         }
     }
-    // for (i = 0; i < addr_count; i++)
-    // {
-    //     UART1_SendByte(num[i].type);
-    //     UART1_SendByte(num[i].num);
-    // }
 }
 
 void module_manager_sort(void)
@@ -272,7 +301,7 @@ void module_manager_init(void)
     addr_count = 0;
     type_buf[0] = 0;
     // mp_hal_delay_ms(100);
-    led_set_color(RGB_OFF);
+    led_set_color(RGB_R);
     sendACK(Addr_Broadcast, TYPE_INIT, &cmd, 1);
 
     for (i = 0; (i < 3) || (module_manager_base_addr == 1); i++)

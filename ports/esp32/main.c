@@ -53,46 +53,53 @@
 #include "modnetwork.h"
 #include "mpthreadport.h"
 
-// MicroPython runs as a task under FreeRTOS
-#define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
-#define MP_TASK_STACK_SIZE      (16 * 1024)
-#define MP_TASK_STACK_LEN       (MP_TASK_STACK_SIZE / sizeof(StackType_t))
+#include "wb-lib/uart.h"
+#include "wb-lib/led.h"
 
-int vprintf_null(const char *format, va_list ap) {
+// MicroPython runs as a task under FreeRTOS
+#define MP_TASK_PRIORITY (ESP_TASK_PRIO_MIN + 1)
+#define MP_TASK_STACK_SIZE (16 * 1024)
+#define MP_TASK_STACK_LEN (MP_TASK_STACK_SIZE / sizeof(StackType_t))
+
+int vprintf_null(const char *format, va_list ap)
+{
     // do nothing: this is used as a log target during raw repl mode
     return 0;
 }
 
-void mp_task(void *pvParameter) {
+void mp_task(void *pvParameter)
+{
     volatile uint32_t sp = (uint32_t)get_sp();
-    #if MICROPY_PY_THREAD
+#if MICROPY_PY_THREAD
     mp_thread_init(pxTaskGetStackStart(NULL), MP_TASK_STACK_LEN);
-    #endif
+#endif
     uart_init();
-
-    #if CONFIG_SPIRAM_SUPPORT
+    wb_uart_init();
+    led_init();
+#if CONFIG_SPIRAM_SUPPORT
     // Try to use the entire external SPIRAM directly for the heap
     size_t mp_task_heap_size;
-    void *mp_task_heap = (void*)0x3f800000;
-    switch (esp_spiram_get_chip_size()) {
-        case ESP_SPIRAM_SIZE_16MBITS:
-            mp_task_heap_size = 2 * 1024 * 1024;
-            break;
-        case ESP_SPIRAM_SIZE_32MBITS:
-        case ESP_SPIRAM_SIZE_64MBITS:
-            mp_task_heap_size = 4 * 1024 * 1024;
-            break;
-        default:
-            // No SPIRAM, fallback to normal allocation
-            mp_task_heap_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
-            mp_task_heap = malloc(mp_task_heap_size);
-            break;
+    void *mp_task_heap = (void *)0x3f800000;
+    switch (esp_spiram_get_chip_size())
+    {
+    case ESP_SPIRAM_SIZE_16MBITS:
+        mp_task_heap_size = 2 * 1024 * 1024;
+        break;
+    case ESP_SPIRAM_SIZE_32MBITS:
+    case ESP_SPIRAM_SIZE_64MBITS:
+        mp_task_heap_size = 4 * 1024 * 1024;
+        break;
+    default:
+        // No SPIRAM, fallback to normal allocation
+        mp_task_heap_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
+        mp_task_heap = malloc(mp_task_heap_size);
+        break;
     }
-    #else
+#else
     // Allocate the uPy heap using malloc and get the largest available region
     size_t mp_task_heap_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
     void *mp_task_heap = malloc(mp_task_heap_size);
-    #endif
+#endif
 
 soft_reset:
     // initialise the stack pointer for the main thread
@@ -112,19 +119,26 @@ soft_reset:
     // run boot-up scripts
     pyexec_frozen_module("_boot.py");
     pyexec_file_if_exists("boot.py");
-    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL)
+    {
         pyexec_file_if_exists("main.py");
     }
 
-    for (;;) {
-        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+    for (;;)
+    {
+        if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL)
+        {
             vprintf_like_t vprintf_log = esp_log_set_vprintf(vprintf_null);
-            if (pyexec_raw_repl() != 0) {
+            if (pyexec_raw_repl() != 0)
+            {
                 break;
             }
             esp_log_set_vprintf(vprintf_log);
-        } else {
-            if (pyexec_friendly_repl() != 0) {
+        }
+        else
+        {
+            if (pyexec_friendly_repl() != 0)
+            {
                 break;
             }
         }
@@ -132,9 +146,9 @@ soft_reset:
 
     machine_timer_deinit_all();
 
-    #if MICROPY_PY_THREAD
+#if MICROPY_PY_THREAD
     mp_thread_deinit();
-    #endif
+#endif
 
     gc_sweep_all();
 
@@ -149,17 +163,20 @@ soft_reset:
     goto soft_reset;
 }
 
-void app_main(void) {
+void app_main(void)
+{
     nvs_flash_init();
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_LEN, NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
 }
 
-void nlr_jump_fail(void *val) {
+void nlr_jump_fail(void *val)
+{
     printf("NLR jump failed, val=%p\n", val);
     esp_restart();
 }
 
 // modussl_mbedtls uses this function but it's not enabled in ESP IDF
-void mbedtls_debug_set_threshold(int threshold) {
+void mbedtls_debug_set_threshold(int threshold)
+{
     (void)threshold;
 }

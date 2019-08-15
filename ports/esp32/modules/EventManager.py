@@ -134,21 +134,22 @@ class EventManager:
                     + '\",\"source\":\"' \
                     + self.eventList[1] \
                     + '\",\"valuetype\":\"string\",\"value\":\"'
-                end_str = '\"}'
+                # end_str = '\"}\n'
             elif self._LIST_VALUE_TYPE == self.valueType:
                 send_str = '{\"type\":\"event\",\"module\":\"' \
                     + self.eventList[0] \
                     + '\",\"source\":\"' \
                     + self.eventList[1] \
                     + '\",\"valuetype\":\"list\",\"value\":\"'
-                end_str = '\"}'
+                # end_str = '\"}\n'
             else:
                 send_str = '{\"type\":\"event\",\"module\":\"' \
                     + self.eventList[0] \
                     + '\",\"source\":\"' \
                     + self.eventList[1] \
                     + '\",\"value\":\"'
-                end_str = '\"}'
+            end_str = '\"}'
+
             # if self.valueType == self._NUMBER_VALUE_TYPE:
             #     send_str = send_str + \
             #         str(delta if delta != None else self.varyValue)
@@ -163,18 +164,17 @@ class EventManager:
                     if bool_value:
                         if self.valueType == self._BOOL_VALUE_TYPE:
                             print(
-                                send_str, ((ownData & self.numFlag) != 0),
-                                end_str,
-                                sep='')
+                                send_str + str(
+                                    (ownData & self.numFlag) != 0) + end_str,
+                                end='')
                         elif self.valueType == self._LIST_VALUE_TYPE:
                             print(
-                                send_str,
-                                ','.join(map(str, ownData)),
+                                send_str + ','.join(map(str, ownData)) +
                                 end_str,
-                                sep='')
+                                end='')
 
                         else:
-                            print(send_str, ownData, end_str, sep='')
+                            print(send_str + str(ownData) + end_str, end='')
                     time.sleep_ms(self.interval)
                     if self.registerFlag:
                         # self.registerFlag = True

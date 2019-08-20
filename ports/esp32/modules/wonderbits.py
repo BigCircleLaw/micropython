@@ -1,7 +1,7 @@
 import wb
 from ModuleManager import moduleManager as mMag
 from system import _module_info
-from public import DEVICE_TYPE, __version__
+from public import DEVICE_TYPE
 import os
 
 state = 'main.py' not in os.listdir()
@@ -55,3 +55,7 @@ class wb_tool(object):
     @staticmethod
     def hide_console():
         pass
+
+
+class __version__(object):
+    VERSION = (0, 1, 2)

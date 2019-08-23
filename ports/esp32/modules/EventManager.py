@@ -1,5 +1,6 @@
 import _thread
 import time
+from Event import Event
 
 
 def _value_comparison(newValue, oldValue, varyValue):
@@ -12,6 +13,7 @@ def _value_comparison(newValue, oldValue, varyValue):
             return True, newValue.copy()
         else:
             for i in range(len(newValue)):
+                # print(i, newValue[i], oldValue[i], newValue[i] != oldValue[i])
                 if newValue[i] != oldValue[i]:
                     return True, newValue.copy()
             return False, oldValue
@@ -30,170 +32,158 @@ class EventManager:
     _STR_VALUE_TYPE = 0x02
     _LIST_VALUE_TYPE = 0x03
 
-    _FALSE_TO_TRUE_ACTION = 0x00
-    _TRUE_TO_FALSE_ACTION = 0x01
+    def __init__(self, list_value, **feature):
 
-    _CHANGED_ACTION = 0x02
-    _UPDATE_ACTION = 0x03
-
-    # MORE_THAN_ACTION = 0x03
-    # LESS_THAN_ACTION = 0x04
-
-    def __init__(self, originalValueNum, valueType, eventList, **feature):
-        self.originalValueNum = originalValueNum
-        if valueType == EventManager._LIST_VALUE_TYPE:
-            self.originalValue = list()
-        else:
-            self.originalValue = 0
-
-        # self.recordValue = originalValue
-        self.valueType = valueType
+        self.module_list_value = list_value
+        self.data_update_list = [0 for i in range(len(list_value))]
         self.registerFlag = True
-        # self.actionType = actionType
-        self.eventList = list()
-        self.eventList.append(eventList[0])
-        self.eventList.append(eventList[1])
-        self.actionType = 0xFF
-        if 'numFlag' in feature:
-            self.numFlag = feature['numFlag']
+
+        # if 'numFlag' in feature:
+        #     self.numFlag = feature['numFlag']
         # if 'varyValue' in feature:
         #     self.varyValue = feature['varyValue']
 
-    def _triggerDecide(self, actionType, compareValue, delta=None):
-        if self.valueType == self._BOOL_VALUE_TYPE:
-            if actionType == self._FALSE_TO_TRUE_ACTION:
-                return (((self.originalValue & self.numFlag) != 0
-                         and (compareValue & self.numFlag) == 0),
-                        self.originalValue)
-            elif actionType == self._TRUE_TO_FALSE_ACTION:
-                return (((self.originalValue & self.numFlag) == 0
-                         and (compareValue & self.numFlag) != 0),
-                        self.originalValue)
-            elif actionType == self._CHANGED_ACTION:
-                return (((self.originalValue ^ compareValue) & self.numFlag) !=
-                        0, self.originalValue)
-        elif self.valueType == self._NUMBER_VALUE_TYPE:
-            if actionType == self._CHANGED_ACTION:
+    def _triggerDecide(self,
+                       valueType,
+                       actionType,
+                       compareValue,
+                       position_of_list,
+                       delta=None,
+                       numFlag=None):
+        if valueType == self._BOOL_VALUE_TYPE:
+            if actionType == Event.TRIGGER_FALSE_TO_TRUE:
+                return (
+                    ((self.module_list_value[position_of_list] & numFlag) != 0
+                     and (compareValue & numFlag) == 0),
+                    self.module_list_value[position_of_list])
+            elif actionType == Event.TRIGGER_TRUE_TO_FALSE:
+                return (((self.module_list_value[position_of_list] &
+                          self.numFlag) == 0
+                         and (compareValue & numFlag) != 0),
+                        self.module_list_value[position_of_list])
+            elif actionType == Event.TRIGGER_CHANGED:
+                return ((
+                    (self.module_list_value[position_of_list] ^ compareValue)
+                    & numFlag) != 0, self.module_list_value[position_of_list])
+        elif valueType == self._NUMBER_VALUE_TYPE:
+            if actionType == Event.TRIGGER_CHANGED:
                 return _value_comparison(
-                    self.originalValue, compareValue,
-                    delta if delta != None else self.varyValue)
-            elif actionType == self._UPDATE_ACTION:
-                if self.updateFlag:
-                    self.updateFlag = False
-                    return True, self.originalValue
-                else:
-                    return False, self.originalValue
-        elif self.valueType == self._STR_VALUE_TYPE:
+                    self.module_list_value[position_of_list], compareValue,
+                    delta if delta != None else 1)
+            # elif actionType == Event.TRIGGER_UPDATE:
+            #     if self.updateFlag:
+            #         self.updateFlag = False
+            #         return True, self.module_list_value[position_of_list]
+            #     else:
+            #         return False, self.module_list_value[position_of_list]
+        elif valueType == self._STR_VALUE_TYPE:
             pass
-        elif self.valueType == self._LIST_VALUE_TYPE:
-            if actionType == self._CHANGED_ACTION:
+        elif valueType == self._LIST_VALUE_TYPE:
+            if actionType == Event.TRIGGER_CHANGED:
                 return _value_comparison(
-                    self.originalValue, compareValue,
-                    delta if delta != None else self.varyValue)
-            elif actionType == self._UPDATE_ACTION:
-                if self.updateFlag:
-                    self.updateFlag = False
-                    return True, self.originalValue
-                else:
-                    return False, self.originalValue
+                    self.module_list_value[position_of_list], compareValue,
+                    delta)
+            # elif actionType == Event.TRIGGER_UPDATE:
+            #     if self.updateFlag:
+            #         self.updateFlag = False
+            #         return True, self.module_list_value[position_of_list].copy()
+            #     else:
+            #         return False, self.module_list_value[position_of_list].copy()
+        if actionType == Event.TRIGGER_UPDATE:
+            if compareValue != self.data_update_list[position_of_list]:
+                return True, self.data_update_list[position_of_list]
+            else:
+                return False, self.data_update_list[position_of_list]
 
-    # def _call_(self, func):
-    #     def event_task_run():
-    #         ownData = self.originalValue
-    #         while True:
-    #             bool_value, ownData = self._triggerDecide(ownData)
-    #             if bool_value:
-    #                 func()
-    #             time.sleep_ms(50)
-    #     _thread.stack_size(_THREAD_STACK_SIZE)
-    #     _thread.start_new_thread(event_task_run, ())
+    def _update_originalValue(self, position=None):
+        update_list = self.data_update_list
+        if position == None:
+            for i in range(len(update_list)):
+                update_list[i] += 1
+        else:
+            update_list[position] += 1
 
-    def _set_originalValue(self, value):
-        self.originalValue = value[self.originalValueNum]
-        if self.actionType == self._UPDATE_ACTION:
-            self.updateFlag = True
-
-    def _register(self, actionType, delta, interval):
-        if (self.valueType == self._BOOL_VALUE_TYPE and delta != None):
+    def _register(self,
+                  position_of_list,
+                  valueType,
+                  target,
+                  actionType,
+                  delta,
+                  interval,
+                  numFlag=None):
+        if (valueType == self._BOOL_VALUE_TYPE and delta != None):
             print('Error: no have parameter.')
             return
-        if actionType == self._UPDATE_ACTION:
-            self.actionType = actionType
-            self.updateFlag = False
-        # regStr = str(actionType) + '.' + str(delta)
-        self.varyValue = delta
-        self.interval = interval
-        # if regStr not in self.registerFlag:
-        #     self.registerFlag[regStr] = True
-        if self.registerFlag:
-            self.registerFlag = False
+        if interval == None:
+            interval = 0.1
 
-            if self._STR_VALUE_TYPE == self.valueType:
-                send_str = '{\"type\":\"event\",\"module\":\"' \
-                    + self.eventList[0] \
-                    + '\",\"source\":\"' \
-                    + self.eventList[1] \
-                    + '\",\"valuetype\":\"string\",\"value\":\"'
-                # end_str = '\"}\n'
-            elif self._LIST_VALUE_TYPE == self.valueType:
-                send_str = '{\"type\":\"event\",\"module\":\"' \
-                    + self.eventList[0] \
-                    + '\",\"source\":\"' \
-                    + self.eventList[1] \
-                    + '\",\"valuetype\":\"list\",\"value\":\"'
-                # end_str = '\"}\n'
+        if self._STR_VALUE_TYPE == valueType:
+            send_str = '{\"type\":\"event\",\"target\":' + str(
+                target) + ',\"valuetype\":\"string\",\"value\":\"'
+
+        elif self._LIST_VALUE_TYPE == valueType:
+            send_str = '{\"type\":\"event\",\"target\":' + str(
+                target) + ',\"valuetype\":\"list\",\"value\":\"'
+            # end_str = '\"}\n'
+        else:
+            send_str = '{\"type\":\"event\",\"target\":' + str(
+                target) + ',\"value\":\"'
+        end_str = '\"}'
+
+        def event_task_run():
+            delay = interval
+            if Event.TRIGGER_UPDATE == actionType:
+                ownData = self.data_update_list[position_of_list]
+            elif self._LIST_VALUE_TYPE == valueType:
+                ownData = self.module_list_value[position_of_list].copy()
             else:
-                send_str = '{\"type\":\"event\",\"module\":\"' \
-                    + self.eventList[0] \
-                    + '\",\"source\":\"' \
-                    + self.eventList[1] \
-                    + '\",\"value\":\"'
-            end_str = '\"}'
+                ownData = self.module_list_value[position_of_list]
+            # print(id(ownData))
+            # print(id(self.module_list_value[position_of_list]))
+            while True:
+                # print(self.eventList[1])
+                bool_value, ownData = self._triggerDecide(
+                    valueType, actionType, ownData, position_of_list, delta,
+                    numFlag)
+                # print(bool_value, ownData)
+                if bool_value:
+                    if valueType == self._BOOL_VALUE_TYPE:
+                        print(
+                            send_str + str(
+                                (self.module_list_value[position_of_list] &
+                                 numFlag) != 0) + end_str,
+                            end='')
+                    elif valueType == self._LIST_VALUE_TYPE:
+                        print(
+                            send_str + ','.join(
+                                map(
+                                    str,
+                                    self.module_list_value[position_of_list].
+                                    copy())) + end_str,
+                            end='')
 
-            # if self.valueType == self._NUMBER_VALUE_TYPE:
-            #     send_str = send_str + \
-            #         str(delta if delta != None else self.varyValue)
-            # print(send_str, end_str)
-            # print(self.valueType, actionType)
-            def event_task_run():
-                ownData = self.originalValue
-                while True:
-                    # print(self.eventList[1])
-                    bool_value, ownData = self._triggerDecide(
-                        actionType, ownData, self.varyValue)
-                    if bool_value:
-                        if self.valueType == self._BOOL_VALUE_TYPE:
-                            print(
-                                send_str + str(
-                                    (ownData & self.numFlag) != 0) + end_str,
-                                end='')
-                        elif self.valueType == self._LIST_VALUE_TYPE:
-                            print(
-                                send_str + ','.join(map(str, ownData)) +
-                                end_str,
-                                end='')
+                    else:
+                        print(
+                            send_str + str(
+                                self.module_list_value[position_of_list]) +
+                            end_str,
+                            end='')
+                    time.sleep(delay)
+                time.sleep_ms(10)
+                # if self.registerFlag:
+                #     _thread.exit()
 
-                        else:
-                            print(send_str + str(ownData) + end_str, end='')
-                    time.sleep_ms(self.interval)
-                    if self.registerFlag:
-                        # self.registerFlag = True
-                        _thread.exit()
-
-            _thread.stack_size(_THREAD_STACK_SIZE)
-            _thread.start_new_thread(event_task_run, ())
+        _thread.stack_size(_THREAD_STACK_SIZE)
+        _thread.start_new_thread(event_task_run, ())
 
     def _unregister(self, actionType=None, delta=None):
-        # regStr = str(actionType) + '.' + str(delta)
-        # if regStr in self.registerFlag:
-        #     self.registerFlag[regStr] = True
         if self.registerFlag == False:
             self.registerFlag = True
         else:
             print('Error: this event isn\'t defined.')
 
     def _compare(self, actionType, delta, interval):
-        if actionType == self._UPDATE_ACTION:
+        if actionType == Event.TRIGGER_UPDATE:
             self.actionType = actionType
             self.updateFlag = False
 
@@ -232,8 +222,7 @@ event_info = dict()
 
 def _return_event_start(originalValueNum, valueType, eventStr, **feature):
     if eventStr[0] not in event_info:
-        event_info[eventStr[0]] = EventManager(originalValueNum, valueType,
-                                               eventStr[1:3], **feature)
+        event_info[eventStr[0]] = EventManager(originalValueNum)
     return event_info[eventStr[0]]
 
 

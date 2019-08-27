@@ -23,7 +23,7 @@ class ModuleManager:
 
     def findModuleList(self, ID, type):
         for module in self.definedModuleList:
-            if (ID == module.id) and (type == module.Type):
+            if (ID == module.id) and (type == module._type):
                 return True, module
         return False, None
 

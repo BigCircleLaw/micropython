@@ -3,23 +3,24 @@ import time
 from Event import Event
 
 
-def _value_comparison(newValue, oldValue, varyValue):
-    if type(newValue) != type(oldValue):
-        return True, newValue
-    elif isinstance(oldValue, list):
-        # print(newValue)
-        # print(oldValue)
-        if len(newValue) != len(oldValue):
-            return True, newValue.copy()
-        else:
-            for i in range(len(newValue)):
-                # print(i, newValue[i], oldValue[i], newValue[i] != oldValue[i])
-                if newValue[i] != oldValue[i]:
-                    return True, newValue.copy()
-            return False, oldValue
+def _value_comparison(new_value, old_value, vary_value):
+    if type(new_value) != type(old_value):
+        return True, new_value
     else:
-        return abs(newValue - oldValue) >= varyValue, oldValue if abs(
-            newValue - oldValue) < varyValue else newValue
+        return abs(new_value - old_value) >= vary_value, old_value if abs(
+            new_value - old_value) < vary_value else new_value
+
+
+def _size_comparison(new_value, old_value):
+    return (new_value > old_value) - (old_value > new_value)
+
+
+def _str_trun_trigger(condition_str):
+    def func(v):
+        # print(v)
+        return eval(condition_str, {'x': v})
+
+    return func
 
 
 _THREAD_STACK_SIZE = 5632
@@ -36,12 +37,11 @@ class EventManager:
 
         self.module_list_value = list_value
         self.data_update_list = [0 for i in range(len(list_value))]
-        self.registerFlag = True
 
         # if 'numFlag' in feature:
         #     self.numFlag = feature['numFlag']
-        # if 'varyValue' in feature:
-        #     self.varyValue = feature['varyValue']
+        # if 'vary_value' in feature:
+        #     self.vary_value = feature['vary_value']
 
     def _triggerDecide(self,
                        valueType,
@@ -50,54 +50,78 @@ class EventManager:
                        position_of_list,
                        delta=None,
                        numFlag=None):
-        if valueType == self._BOOL_VALUE_TYPE:
-            if actionType == Event.TRIGGER_FALSE_TO_TRUE:
+        if actionType == Event.TRIGGER_FALSE_TO_TRUE:
+            if valueType == self._BOOL_VALUE_TYPE:
                 return (
                     ((self.module_list_value[position_of_list] & numFlag) != 0
                      and (compareValue & numFlag) == 0),
                     self.module_list_value[position_of_list])
-            elif actionType == Event.TRIGGER_TRUE_TO_FALSE:
+            else:
+                a = bool(self.module_list_value[position_of_list])
+                b = bool(compareValue)
+                val = a == True and b == False
+                if val:
+                    if valueType == self._LIST_VALUE_TYPE:
+                        return True, self.module_list_value[
+                            position_of_list].copy()
+                    return True, self.module_list_value[position_of_list]
+                else:
+                    return False, compareValue
+
+        elif actionType == Event.TRIGGER_TRUE_TO_FALSE:
+            if valueType == self._BOOL_VALUE_TYPE:
                 return (((self.module_list_value[position_of_list] &
                           self.numFlag) == 0
                          and (compareValue & numFlag) != 0),
                         self.module_list_value[position_of_list])
-            elif actionType == Event.TRIGGER_CHANGED:
+            else:
+                a = bool(self.module_list_value[position_of_list])
+                b = bool(compareValue)
+                val = a == False and b == True
+                if val:
+                    if valueType == self._LIST_VALUE_TYPE:
+                        return True, self.module_list_value[
+                            position_of_list].copy()
+                    return True, self.module_list_value[position_of_list]
+                else:
+                    return False, compareValue
+        elif actionType == Event.TRIGGER_CHANGED:
+            if valueType == self._BOOL_VALUE_TYPE:
                 return ((
                     (self.module_list_value[position_of_list] ^ compareValue)
                     & numFlag) != 0, self.module_list_value[position_of_list])
-        elif valueType == self._NUMBER_VALUE_TYPE:
-            if actionType == Event.TRIGGER_CHANGED:
+            elif valueType == self._LIST_VALUE_TYPE:
+                val = _size_comparison(
+                    self.module_list_value[position_of_list], compareValue)
+                if val == 0:
+                    return False, compareValue
+                else:
+                    return True, self.module_list_value[position_of_list].copy(
+                    )
+            else:
                 return _value_comparison(
                     self.module_list_value[position_of_list], compareValue,
-                    delta if delta != None else 1)
-            # elif actionType == Event.TRIGGER_UPDATE:
-            #     if self.updateFlag:
-            #         self.updateFlag = False
-            #         return True, self.module_list_value[position_of_list]
-            #     else:
-            #         return False, self.module_list_value[position_of_list]
-        elif valueType == self._STR_VALUE_TYPE:
-            pass
-        elif valueType == self._LIST_VALUE_TYPE:
-            if actionType == Event.TRIGGER_CHANGED:
-                return _value_comparison(
-                    self.module_list_value[position_of_list], compareValue,
-                    delta)
-            # elif actionType == Event.TRIGGER_UPDATE:
-            #     if self.updateFlag:
-            #         self.updateFlag = False
-            #         return True, self.module_list_value[position_of_list].copy()
-            #     else:
-            #         return False, self.module_list_value[position_of_list].copy()
-        if actionType == Event.TRIGGER_UPDATE:
+                    delta if delta is not None else 1)
+        elif actionType == Event.TRIGGER_UPDATE:
             if compareValue != self.data_update_list[position_of_list]:
                 return True, self.data_update_list[position_of_list]
             else:
                 return False, self.data_update_list[position_of_list]
+        else:
+            # print(self.module_list_value[position_of_list])
+            val = actionType(self.module_list_value[position_of_list])
+            # print(val)
+            if val:
+                if valueType == self._LIST_VALUE_TYPE:
+                    return True, self.module_list_value[position_of_list].copy(
+                    )
+                return True, self.module_list_value[position_of_list]
+            else:
+                return False, compareValue
 
     def _update_originalValue(self, position=None):
         update_list = self.data_update_list
-        if position == None:
+        if position is None:
             for i in range(len(update_list)):
                 update_list[i] += 1
         else:
@@ -129,6 +153,9 @@ class EventManager:
             send_str = '{\"type\":\"event\",\"target\":' + str(
                 target) + ',\"value\":\"'
         end_str = '\"}'
+
+        if type(actionType) is str:
+            actionType = _str_trun_trigger(actionType)
 
         def event_task_run():
             delay = interval
@@ -170,86 +197,63 @@ class EventManager:
                             end='')
                     time.sleep(delay)
                 time.sleep_ms(10)
-                # if self.registerFlag:
-                #     _thread.exit()
 
         _thread.stack_size(_THREAD_STACK_SIZE)
         _thread.start_new_thread(event_task_run, ())
 
-    def _unregister(self, actionType=None, delta=None):
-        if self.registerFlag == False:
-            self.registerFlag = True
-        else:
-            print('Error: this event isn\'t defined.')
+    def _compare(self,
+                 func,
+                 position_of_list,
+                 valueType,
+                 actionType,
+                 delta,
+                 interval,
+                 numFlag=None):
+        if interval is None:
+            interval = 0.1
 
-    def _compare(self, actionType, delta, interval):
-        if actionType == Event.TRIGGER_UPDATE:
-            self.actionType = actionType
-            self.updateFlag = False
+        if type(actionType) is str:
+            actionType = _str_trun_trigger(actionType)
 
-        def event_add_task(func):
-            def event_task_run():
-                ownData = self.originalValue
+        def event_task_run():
+            delay = interval
+            if Event.TRIGGER_UPDATE == actionType:
+                ownData = self.data_update_list[position_of_list]
+            elif self._LIST_VALUE_TYPE == valueType:
+                ownData = self.module_list_value[position_of_list].copy()
+            else:
+                ownData = self.module_list_value[position_of_list]
+            # while True:
+            #     bool_value, ownData = self._triggerDecide(
+            #         valueType, actionType, ownData, position_of_list, delta,
+            #         numFlag)
+            #     # print(bool_value, ownData)
+            #     if bool_value:
+            #         if self._LIST_VALUE_TYPE == valueType:
+            #             func(self.module_list_value[position_of_list].copy())
+            #         else:
+            #             func(self.module_list_value[position_of_list])
+            #         time.sleep(delay)
+            #     time.sleep_ms(10)
+            try:
                 while True:
                     bool_value, ownData = self._triggerDecide(
-                        actionType, ownData, delta)
+                        valueType, actionType, ownData, position_of_list,
+                        delta, numFlag)
+                    # print(bool_value, ownData)
                     if bool_value:
-                        func()
-                    time.sleep_ms(interval)
-
-            _thread.stack_size(_THREAD_STACK_SIZE)
-            _thread.start_new_thread(event_task_run, ())
-
-        return event_add_task
-
-
-def event(tigger, interval=50):
-    def event_add_task(func):
-        def event_task_run():
-            while True:
-                if tigger():
-                    func()
-                time.sleep_ms(interval)
+                        if self._LIST_VALUE_TYPE == valueType:
+                            func(self.module_list_value[position_of_list].
+                                 copy())
+                        else:
+                            func(self.module_list_value[position_of_list])
+                        time.sleep(delay)
+                    time.sleep_ms(10)
+                    if Event.registerFlag:
+                        _thread.exit()
+            except:
+                Event.registerFlag = True
+                _thread.exit()
 
         _thread.stack_size(_THREAD_STACK_SIZE)
         _thread.start_new_thread(event_task_run, ())
-
-    return event_add_task
-
-
-event_info = dict()
-
-
-def _return_event_start(originalValueNum, valueType, eventStr, **feature):
-    if eventStr[0] not in event_info:
-        event_info[eventStr[0]] = EventManager(originalValueNum)
-    return event_info[eventStr[0]]
-
-
-def _set_event_value(eventNameList, valueList, select=None):
-    if select == None:
-        for name in eventNameList:
-            if name in event_info:
-                event_info[name]._set_originalValue(valueList)
-    else:
-        try:
-            event_info[select]._set_originalValue(valueList)
-        except:
-            pass
-
-
-class EventNameList:
-    def __init__(self, module, ID, name_list=None):
-        # self.module = module
-        # self.ID = ID
-        self.name_dict = module.__module__[0].lower(
-        ) + module.__module__[1:] + str(ID)
-        self.event_name = name_list
-
-    def get_name(self, valueName, name_list=None):
-        name = self.name_dict + valueName
-        temp = name_list if self.event_name == None else self.event_name
-        if name not in temp:
-            temp.append(name)
-
-        return name, self.name_dict, valueName

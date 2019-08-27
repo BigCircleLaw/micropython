@@ -10,7 +10,7 @@ from wb import _DataFormat, module_manager, hub
 class ModuleObj(object):
     def __new__(cls, Id=1):
         Id = Id - 1
-        state, module = mMag.findModuleList(Id, cls.Type)
+        state, module = mMag.findModuleList(Id, cls._type)
         if state:
             module.state = False
         else:
@@ -23,7 +23,7 @@ class ModuleObj(object):
         if self.state:
             self.id = Id
             # self.dstAddr = _Addr_Error
-            self.dstAddr = module_manager.get_addr(self.id, self.Type)
+            self.dstAddr = module_manager.get_addr(self.id, self._type)
             self.state = True
             mMag.defineNewModule(self)
 

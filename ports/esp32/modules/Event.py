@@ -8,16 +8,21 @@ class Event(object):
     TRIGGER_MORE = 0x04
     TRIGGER_LESS = 0x05
 
-    def __init__(self):
-        pass
+    registerFlag = False
 
-    # def _call_(self, func):
-    #     def event_task_run():
-    #         ownData = self.originalValue
-    #         while True:
-    #             bool_value, ownData = self._triggerDecide(ownData)
-    #             if bool_value:
-    #                 func()
-    #             time.sleep_ms(50)
-    #     _thread.stack_size(_THREAD_STACK_SIZE)
-    #     _thread.start_new_thread(event_task_run, ())
+    def __init__(self,
+                 source,
+                 trigger_type,
+                 value=None,
+                 interval=None,
+                 originalValueNum=None):
+        self.source = source
+        self.trigger_type = trigger_type
+        self.value = value
+        self.interval = interval
+        self.originalValueNum = originalValueNum
+
+    def __call__(self, func):
+        self.source[0]._compare(func, self.source[1], self.source[2],
+                                self.trigger_type, self.value, self.interval,
+                                self.source[3])

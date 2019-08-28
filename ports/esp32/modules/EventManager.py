@@ -251,7 +251,7 @@ class EventManager:
                     time.sleep_ms(10)
                     if Event.registerFlag:
                         _thread.exit()
-            except:
+            except KeyboardInterrupt:
                 Event.registerFlag = True
                 _thread.exit()
 

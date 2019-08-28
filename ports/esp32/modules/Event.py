@@ -5,9 +5,6 @@ class Event(object):
     TRIGGER_CHANGED = 0x02
     TRIGGER_UPDATE = 0x03
 
-    TRIGGER_MORE = 0x04
-    TRIGGER_LESS = 0x05
-
     registerFlag = False
 
     def __init__(self,

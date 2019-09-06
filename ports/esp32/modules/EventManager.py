@@ -66,7 +66,7 @@ class EventManager:
                             position_of_list].copy()
                     return True, self.module_list_value[position_of_list]
                 else:
-                    return False, compareValue
+                    return False, self.module_list_value[position_of_list]
 
         elif actionType == Event.TRIGGER_TRUE_TO_FALSE:
             if valueType == self._BOOL_VALUE_TYPE:
@@ -84,7 +84,7 @@ class EventManager:
                             position_of_list].copy()
                     return True, self.module_list_value[position_of_list]
                 else:
-                    return False, compareValue
+                    return False, self.module_list_value[position_of_list]
         elif actionType == Event.TRIGGER_CHANGED:
             if valueType == self._BOOL_VALUE_TYPE:
                 return ((

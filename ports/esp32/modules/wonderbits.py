@@ -62,8 +62,7 @@ class wb_tool(object):
         pass
 
 
-class __version__(object):
-    VERSION = (0, 0, 3)
-
+VERSION = (0, 1, 9)
+__version__ = '.'.join(map(str, VERSION))
 
 from Event import Event

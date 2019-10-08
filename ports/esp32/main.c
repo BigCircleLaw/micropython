@@ -37,7 +37,11 @@
 #include "esp_task.h"
 #include "soc/cpu.h"
 #include "esp_log.h"
+#if MICROPY_ESP_IDF_4
+#include "esp32/spiram.h"
+#else
 #include "esp_spiram.h"
+#endif
 
 #include "py/stackctrl.h"
 #include "py/nlr.h"
@@ -76,7 +80,9 @@ void mp_task(void *pvParameter)
     uart_init();
     wb_uart_init();
     led_init();
-#if CONFIG_SPIRAM_SUPPORT
+
+// TODO: CONFIG_SPIRAM_SUPPORT is for 3.3 compatibility, remove after move to 4.0.
+#if CONFIG_ESP32_SPIRAM_SUPPORT || CONFIG_SPIRAM_SUPPORT
     // Try to use the entire external SPIRAM directly for the heap
     size_t mp_task_heap_size;
     void *mp_task_heap = (void *)0x3f800000;
@@ -165,7 +171,12 @@ soft_reset:
 
 void app_main(void)
 {
-    nvs_flash_init();
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND)
+    {
+        nvs_flash_erase();
+        nvs_flash_init();
+    }
     xTaskCreatePinnedToCore(mp_task, "mp_task", MP_TASK_STACK_LEN, NULL, MP_TASK_PRIORITY, &mp_main_task_handle, MP_TASK_COREID);
 }
 
@@ -179,4 +190,16 @@ void nlr_jump_fail(void *val)
 void mbedtls_debug_set_threshold(int threshold)
 {
     (void)threshold;
+}
+
+void *esp_native_code_commit(void *buf, size_t len)
+{
+    len = (len + 3) & ~3;
+    uint32_t *p = heap_caps_malloc(len, MALLOC_CAP_EXEC);
+    if (p == NULL)
+    {
+        m_malloc_fail(len);
+    }
+    memcpy(p, buf, len);
+    return p;
 }

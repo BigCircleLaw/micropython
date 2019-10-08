@@ -6,7 +6,10 @@
 
 #include <stdint.h>
 #include <alloca.h>
+
+#if !MICROPY_ESP_IDF_4
 #include "rom/ets_sys.h"
+#endif
 
 // object representation and NLR handling
 #define MICROPY_OBJ_REPR                    (MICROPY_OBJ_REPR_A)
@@ -17,6 +20,9 @@
 
 // emitters
 #define MICROPY_PERSISTENT_CODE_LOAD        (1)
+#define MICROPY_EMIT_XTENSAWIN              (1)
+void *esp_native_code_commit(void*, size_t);
+#define MP_PLAT_COMMIT_EXEC(buf, len) esp_native_code_commit(buf, len)
 
 // compiler configuration
 #define MICROPY_COMP_MODULE_CONST           (1)
@@ -156,6 +162,8 @@
 #define MICROPY_PY_WEBREPL                  (1)
 #define MICROPY_PY_FRAMEBUF                 (1)
 #define MICROPY_PY_USOCKET_EVENTS           (MICROPY_PY_WEBREPL)
+#define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
+#define MICROPY_PY_BLUETOOTH_DEFAULT_NAME   ("ESP32")
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN            (1)
@@ -183,8 +191,15 @@ extern const struct _mp_obj_module_t uos_module;
 extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_network;
+extern const struct _mp_obj_module_t mp_module_bluetooth;
 extern const struct _mp_obj_module_t mp_module_onewire;
 extern const struct _mp_obj_module_t mp_module_wonderbits;    //这个是我们添加的，需要声明一下应用外部的struct
+
+#if MICROPY_PY_BLUETOOTH
+#define BLUETOOTH_BUILTIN_MODULE              { MP_ROM_QSTR(MP_QSTR_bluetooth), MP_ROM_PTR(&mp_module_bluetooth) },
+#else
+#define BLUETOOTH_BUILTIN_MODULE
+#endif
 
 #define MICROPY_PORT_BUILTIN_MODULES \
     { MP_OBJ_NEW_QSTR(MP_QSTR_esp), (mp_obj_t)&esp_module }, \
@@ -194,6 +209,7 @@ extern const struct _mp_obj_module_t mp_module_wonderbits;    //这个是我们�
     { MP_OBJ_NEW_QSTR(MP_QSTR_usocket), (mp_obj_t)&mp_module_usocket }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_machine), (mp_obj_t)&mp_module_machine }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network }, \
+    BLUETOOTH_BUILTIN_MODULE \
     { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uhashlib), (mp_obj_t)&mp_module_uhashlib }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_wb), (mp_obj_t)&mp_module_wonderbits }, \
@@ -221,10 +237,18 @@ extern const struct _mp_obj_module_t mp_module_wonderbits;    //这个是我们�
 
 struct _machine_timer_obj_t;
 
+#if MICROPY_BLUETOOTH_NIMBLE
+struct mp_bluetooth_nimble_root_pointers_t;
+#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE struct _mp_bluetooth_nimble_root_pointers_t *bluetooth_nimble_root_pointers;
+#else
+#define MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
+#endif
+
 #define MICROPY_PORT_ROOT_POINTERS \
     const char *readline_hist[8]; \
     mp_obj_t machine_pin_irq_handler[40]; \
     struct _machine_timer_obj_t *machine_timer_obj_head; \
+    MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
 
 // type definitions for the specific machine
 

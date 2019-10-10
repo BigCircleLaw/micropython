@@ -44,7 +44,7 @@ class ModuleObj(object):
         if self.dstAddr == _Addr_Error:
             return
         module_manager.send_ack(self.dstAddr, type, data)
-        # time.sleep_us(500)
+        time.sleep_us(500)
 
     def set_onboard_rgb(self, rgb):
         """

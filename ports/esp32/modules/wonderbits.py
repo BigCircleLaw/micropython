@@ -4,6 +4,9 @@ from system import _module_info
 from public import DEVICE_TYPE
 import os
 
+VERSION = (0, 2, 0)
+__version__ = '.'.join(map(str, VERSION))
+
 state = 'main.py' not in os.listdir()
 
 _m_info = wb.module_manager.get_type_num_buf()
@@ -61,8 +64,5 @@ class wb_tool(object):
     def hide_console():
         pass
 
-
-VERSION = (0, 1, 9)
-__version__ = '.'.join(map(str, VERSION))
 
 from Event import Event

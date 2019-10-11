@@ -341,7 +341,7 @@ void mp_bluetooth_get_device_addr(uint8_t *addr) {
     #endif
 }
 
-int mp_bluetooth_gap_advertise_start(bool connectable, uint16_t interval_ms, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len) {
+int mp_bluetooth_gap_advertise_start(bool connectable, int32_t interval_us, const uint8_t *adv_data, size_t adv_data_len, const uint8_t *sr_data, size_t sr_data_len) {
     int ret;
 
     mp_bluetooth_gap_advertise_stop();
@@ -360,18 +360,12 @@ int mp_bluetooth_gap_advertise_start(bool connectable, uint16_t interval_ms, con
         }
     }
 
-    // Convert from 1ms to 0.625ms units.
-    interval_ms = interval_ms * 8 / 5;
-    if (interval_ms < 0x20 || interval_ms > 0x4000) {
-        return MP_EINVAL;
-    }
-
     struct ble_gap_adv_params adv_params = {
         .conn_mode = connectable ? BLE_GAP_CONN_MODE_UND : BLE_GAP_CONN_MODE_NON,
         .disc_mode = BLE_GAP_DISC_MODE_GEN,
-        .itvl_min = interval_ms,
-        .itvl_max = interval_ms,
-        .channel_map = 7, // all 3 channels
+        .itvl_min = interval_us / BLE_HCI_ADV_ITVL, // convert to 625us units.
+        .itvl_max = interval_us / BLE_HCI_ADV_ITVL,
+        .channel_map = 7, // all 3 channels.
     };
 
     ret = ble_gap_adv_start(BLE_OWN_ADDR_PUBLIC, NULL, BLE_HS_FOREVER, &adv_params, gap_event_cb, NULL);
@@ -614,16 +608,16 @@ STATIC int gap_scan_cb(struct ble_gap_event *event, void *arg) {
     return 0;
 }
 
-int mp_bluetooth_gap_scan_start(int32_t duration_ms) {
+int mp_bluetooth_gap_scan_start(int32_t duration_ms, int32_t interval_us, int32_t window_us) {
     if (duration_ms == 0) {
         duration_ms = BLE_HS_FOREVER;
     }
-    STATIC const struct ble_gap_disc_params discover_params = {
-        .itvl = BLE_GAP_SCAN_SLOW_INTERVAL1,
-        .window = BLE_GAP_SCAN_SLOW_WINDOW1,
+    struct ble_gap_disc_params discover_params = {
+        .itvl = MAX(BLE_HCI_SCAN_ITVL_MIN, MIN(BLE_HCI_SCAN_ITVL_MAX, interval_us / BLE_HCI_SCAN_ITVL)),
+        .window = MAX(BLE_HCI_SCAN_WINDOW_MIN, MIN(BLE_HCI_SCAN_WINDOW_MAX, window_us / BLE_HCI_SCAN_ITVL)),
         .filter_policy = BLE_HCI_CONN_FILT_NO_WL,
         .limited = 0,
-        .passive = 0,
+        .passive = 1,  // TODO: Handle BLE_HCI_ADV_RPT_EVTYPE_SCAN_RSP in gap_scan_cb above.
         .filter_duplicates = 0,
     };
     int err = ble_gap_disc(BLE_OWN_ADDR_PUBLIC, duration_ms, &discover_params, gap_scan_cb, NULL);

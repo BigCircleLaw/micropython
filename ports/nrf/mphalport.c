@@ -62,7 +62,9 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     }
     return ret;
 }
+#endif
 
+#if !MICROPY_PY_BLE_NUS && !MICROPY_HW_USB_CDC
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
         if (MP_STATE_PORT(board_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(board_stdio_uart))) {
@@ -96,7 +98,6 @@ void mp_hal_delay_us(mp_uint_t us)
     if (us == 0) {
         return;
     }
-
     register uint32_t delay __ASM ("r0") = us;
     __ASM volatile (
 #ifdef NRF51
@@ -116,7 +117,7 @@ void mp_hal_delay_us(mp_uint_t us)
         " NOP\n"
         " NOP\n"
         " NOP\n"
-#ifdef NRF52
+#if defined(NRF52) || defined(NRF9160_XXAA)
         " NOP\n"
         " NOP\n"
         " NOP\n"

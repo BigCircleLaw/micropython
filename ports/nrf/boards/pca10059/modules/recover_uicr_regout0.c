@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Ayke van Laethem
+ * Copyright (c) 2019 Glenn Ruben Bakke
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,45 +24,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef __MICROPY_INCLUDED_LIB_FLASH_H__
-#define __MICROPY_INCLUDED_LIB_FLASH_H__
+#include <stdbool.h>
 
-#include "nrfx_nvmc.h"
+#include "nrf.h"
+#include "nrf52840_bitfields.h"
 
-#if defined(NRF51)
-#define FLASH_PAGESIZE (1024)
+bool uicr_REGOUT0_erased() {
+    if (NRF_UICR->REGOUT0 == 0xFFFFFFFFUL) {
+        return true;
+    }
+    return false;
+}
 
-#elif defined(NRF52_SERIES)
-#define FLASH_PAGESIZE (4096)
+void board_modules_init0(void)
+{
+    if (uicr_REGOUT0_erased()) {
 
-#elif defined(NRF91_SERIES)
-#define FLASH_PAGESIZE (4096)
+        // Wait for pending NVMC operations to finish.
+        while (NRF_NVMC->READY != NVMC_READY_READY_Ready);
 
-#else
-#error Unknown chip
-#endif
+        // Enable write mode in NVMC.
+        NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Wen;
+        while (NRF_NVMC->READY != NVMC_READY_READY_Ready);
 
-#define FLASH_IS_PAGE_ALIGNED(addr) (((uint32_t)(addr) & (FLASH_PAGESIZE - 1)) == 0)
+        // Write 3v3 value to UICR->REGOUT0.
+        NRF_UICR->REGOUT0 = (UICR_REGOUT0_VOUT_3V3 & UICR_REGOUT0_VOUT_Msk) << UICR_REGOUT0_VOUT_Pos;
+        while (NRF_NVMC->READY != NVMC_READY_READY_Ready);
 
-#if BLUETOOTH_SD
+        // Enable read mode in NVMC.
+        NRF_NVMC->CONFIG = NVMC_CONFIG_WEN_Ren;
+        while (NRF_NVMC->READY != NVMC_READY_READY_Ready);
 
-typedef enum {
-    FLASH_STATE_BUSY,
-    FLASH_STATE_SUCCESS,
-    FLASH_STATE_ERROR,
-} flash_state_t;
-
-void flash_page_erase(uint32_t address);
-void flash_write_byte(uint32_t address, uint8_t value);
-void flash_write_bytes(uint32_t address, const uint8_t *src, uint32_t num_bytes);
-void flash_operation_finished(flash_state_t result);
-
-#else
-
-#define flash_page_erase nrfx_nvmc_page_erase
-#define flash_write_byte nrfx_nvmc_byte_write
-#define flash_write_bytes nrfx_nvmc_bytes_write
-
-#endif
-
-#endif // __MICROPY_INCLUDED_LIB_FLASH_H__
+        // Reset to apply the update.
+        NVIC_SystemReset();
+    }
+}

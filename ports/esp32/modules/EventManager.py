@@ -141,17 +141,19 @@ class EventManager:
         if interval == None:
             interval = 0.1
 
-        if self._STR_VALUE_TYPE == valueType:
-            send_str = '{\"type\":\"event\",\"target\":' + str(
-                target) + ',\"valuetype\":\"string\",\"value\":\"'
+        send_str = '{\"type\":\"event\",\"target\":' + str(
+            target) + ',\"valuetype\":'
 
+        if self._STR_VALUE_TYPE == valueType:
+            send_str += '\"string\"'
         elif self._LIST_VALUE_TYPE == valueType:
-            send_str = '{\"type\":\"event\",\"target\":' + str(
-                target) + ',\"valuetype\":\"list\",\"value\":\"'
-            # end_str = '\"}\n'
-        else:
-            send_str = '{\"type\":\"event\",\"target\":' + str(
-                target) + ',\"value\":\"'
+            send_str += '\"list\"'
+        elif self._NUMBER_VALUE_TYPE == valueType:
+            send_str += '\"number\"'
+        elif self._BOOL_VALUE_TYPE == valueType:
+            send_str += '\"bool\"'
+
+        send_str += ',\"value\":\"'
         end_str = '\"}'
 
         if type(actionType) is str:

@@ -6,7 +6,8 @@
 
 This module provides an interface to a Bluetooth controller on a board.
 Currently this supports Bluetooth Low Energy (BLE) in Central, Peripheral,
-Broadcaster, and Observer roles.
+Broadcaster, and Observer roles, and a device may operate in multiple
+roles concurrently.
 
 This API is intended to match the low-level Bluetooth protocol and provide
 building-blocks for higher-level abstractions such as specific device types.
@@ -66,6 +67,7 @@ Event Handling
             elif event == _IRQ_GATTS_READ_REQUEST:
                 # A central has issued a read. Note: this is a hard IRQ.
                 # Return None to deny the read.
+                # Note: This event is not supported on ESP32.
                 conn_handle, attr_handle = data
             elif event == _IRQ_SCAN_RESULT:
                 # A single scan result.
@@ -138,6 +140,11 @@ Broadcaster Role (Advertiser)
     protocol (e.g. ``bytes``, ``bytearray``, ``str``). *adv_data* is included
     in all broadcasts, and *resp_data* is send in reply to an active scan.
 
+    Note: if *adv_data* (or *resp_data*) is ``None``, then the data passed
+    to the previous call to ``gap_advertise`` will be re-used. This allows a
+    broadcaster to resume advertising with just ``gap_advertise(interval_us)``.
+    To clear the advertising payload pass an empty ``bytes``, i.e. ``b''``.
+
 
 Observer Role (Scanner)
 -----------------------
@@ -169,9 +176,17 @@ A BLE peripheral has a set of registered services. Each service may contain
 characteristics, which each have a value. Characteristics can also contain
 descriptors, which themselves have values.
 
-These values are stored locally and can be read from or written to by a remote
-central device. Additionally, a peripheral can "notify" its value to a connected
-central via its connection handle.
+These values are stored locally, and are accessed by their "value handle" which
+is generated during service registration. They can also be read from or written
+to by a remote central device. Additionally, a peripheral can "notify" a
+characteristic to a connected central via a connection handle.
+
+Characteristics and descriptors have a default maximum size of 20 bytes.
+Anything written to them by a central will be truncated to this length. However,
+any local write will increase the maximum size, so if you want to allow larger
+writes from a central to a given characteristic, use
+:meth:`gatts_write<BLE.gatts_write>` after registration. e.g.
+``gatts_write(char_handle, bytes(100))``.
 
 .. method:: BLE.gatts_register_services(services_definition)
 
@@ -199,7 +214,7 @@ central via its connection handle.
 
         HR_UUID = bluetooth.UUID(0x180D)
         HR_CHAR = (bluetooth.UUID(0x2A37), bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,)
-        HR_SERVICE = (HR_SERVICE, (HR_CHAR,),)
+        HR_SERVICE = (HR_UUID, (HR_CHAR,),)
         UART_UUID = bluetooth.UUID('6E400001-B5A3-F393-E0A9-E50E24DCCA9E')
         UART_TX = (bluetooth.UUID('6E400003-B5A3-F393-E0A9-E50E24DCCA9E'), bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,)
         UART_RX = (bluetooth.UUID('6E400002-B5A3-F393-E0A9-E50E24DCCA9E'), bluetooth.FLAG_WRITE,)
@@ -246,6 +261,9 @@ Central Role (GATT Client)
     Disconnect the specified connection handle.
 
     On success, the ``_IRQ_PERIPHERAL_DISCONNECT`` event will be raised.
+
+    Returns ``False`` if the connection handle wasn't connected, and ``True``
+    otherwise.
 
 .. method:: BLE.gattc_discover_services(conn_handle)
 

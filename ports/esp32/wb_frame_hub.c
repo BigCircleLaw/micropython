@@ -42,7 +42,7 @@ mp_obj_t frame_hub_handle(mp_obj_t self_in)
     #if WONDERBITS_DEBUG
         // printf("frame_hub_handle\n");
     #endif
-    size_t num = uart_read_bytes(UART_NUM_1, receiver_data, 512, 0);
+    size_t num = uart_read_bytes(UART_NUM_2, receiver_data, 512, 0);
     for(size_t i = 0; i < num; i++)
     {
         hub_put(receiver_data[i]);

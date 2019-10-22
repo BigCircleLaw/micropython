@@ -19,15 +19,15 @@ void wb_uart_init(void)
         .stop_bits = UART_STOP_BITS_1,
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
     };
-    uart_param_config(UART_NUM_1, &uart_config);
-    uart_set_pin(UART_NUM_1, 10, 9, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-    // uart_driver_install(UART_NUM_1, 2*1024, 0, 0, NULL, 0);
-    uart_driver_install(UART_NUM_1, 512, 0, 0, NULL, 0);
-    // uart_isr_free(UART_NUM_1);
+    uart_param_config(UART_NUM_2, &uart_config);
+    uart_set_pin(UART_NUM_2, 21, 19, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+    // uart_driver_install(UART_NUM_2, 2*1024, 0, 0, NULL, 0);
+    uart_driver_install(UART_NUM_2, 512, 0, 0, NULL, 0);
+    // uart_isr_free(UART_NUM_2);
     // uart_isr_handle_t handle;
-    // uart_isr_register(UART_NUM_1, wb_uart_irq_handler, NULL, ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_IRAM, &handle);
-    // uart_enable_rx_intr(UART_NUM_1);
-    // uart_set_rx_timeout(UART_NUM_1, 10);
+    // uart_isr_register(UART_NUM_2, wb_uart_irq_handler, NULL, ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_IRAM, &handle);
+    // uart_enable_rx_intr(UART_NUM_2);
+    // uart_set_rx_timeout(UART_NUM_2, 10);
 }
 
 // all code executed in ISR must be in IRAM, and any const data must be in DRAM
@@ -50,10 +50,10 @@ void wb_uart_init(void)
 
 void Uart_send(unsigned char *data, unsigned char len)
 {
-    uart_write_bytes(UART_NUM_1, (const char*)data, len);
+    uart_write_bytes(UART_NUM_2, (const char*)data, len);
 }
 
 void UART1_SendByte(unsigned char data)
 {
-    uart_write_bytes(UART_NUM_1, (const char*)&data, 1);
+    uart_write_bytes(UART_NUM_2, (const char*)&data, 1);
 }

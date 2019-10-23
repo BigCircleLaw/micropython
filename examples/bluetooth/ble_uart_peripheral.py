@@ -27,6 +27,7 @@ class BLEUART:
         self._connections = set()
         self._rx_buffer = bytearray()
         self._handler = None
+        # Optionally add services=[_UART_UUID], but this is likely to make the payload too large.
         self._payload = advertising_payload(name=name, appearance=_ADV_APPEARANCE_GENERIC_COMPUTER)
         self._advertise()
 
@@ -74,5 +75,29 @@ class BLEUART:
         self._ble.gap_advertise(interval_us, adv_data=self._payload)
 
 
-# ble = bluetooth.BLE()
-# uart = BLEUART(ble)
+def demo():
+    import time
+
+    ble = bluetooth.BLE()
+    uart = BLEUART(ble)
+
+    def on_rx():
+        print('rx: ', uart.read().decode().strip())
+
+    uart.irq(handler=on_rx)
+    nums = [4, 8, 15, 16, 23, 42]
+    i = 0
+
+    try:
+        while True:
+            uart.write(str(nums[i]) + '\n')
+            i = (i + 1) % len(nums)
+            time.sleep_ms(1000)
+    except KeyboardInterrupt:
+        pass
+
+    uart.close()
+
+
+if __name__ == '__main__':
+    demo()

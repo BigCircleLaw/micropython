@@ -1,6 +1,7 @@
 import _thread
 import time
 from Event import Event
+from wb import task_switch_then_back, send_a_data
 
 
 def _value_comparison(new_value, old_value, vary_value):
@@ -171,9 +172,11 @@ class EventManager:
             # print(id(self.module_list_value[position_of_list]))
             while True:
                 # print(self.eventList[1])
+                # send_a_data(target)
                 bool_value, ownData = self._triggerDecide(
                     valueType, actionType, ownData, position_of_list, delta,
                     numFlag)
+                # send_a_data(0xFF)
                 # print(bool_value, ownData)
                 if bool_value:
                     if valueType == self._BOOL_VALUE_TYPE:
@@ -198,7 +201,7 @@ class EventManager:
                             end_str,
                             end='')
                     time.sleep(delay)
-                time.sleep_ms(10)
+                task_switch_then_back()
 
         _thread.stack_size(_THREAD_STACK_SIZE)
         _thread.start_new_thread(event_task_run, ())
@@ -225,18 +228,7 @@ class EventManager:
                 ownData = self.module_list_value[position_of_list].copy()
             else:
                 ownData = self.module_list_value[position_of_list]
-            # while True:
-            #     bool_value, ownData = self._triggerDecide(
-            #         valueType, actionType, ownData, position_of_list, delta,
-            #         numFlag)
-            #     # print(bool_value, ownData)
-            #     if bool_value:
-            #         if self._LIST_VALUE_TYPE == valueType:
-            #             func(self.module_list_value[position_of_list].copy())
-            #         else:
-            #             func(self.module_list_value[position_of_list])
-            #         time.sleep(delay)
-            #     time.sleep_ms(10)
+                
             try:
                 while True:
                     bool_value, ownData = self._triggerDecide(
@@ -250,7 +242,7 @@ class EventManager:
                         else:
                             func(self.module_list_value[position_of_list])
                         time.sleep(delay)
-                    time.sleep_ms(10)
+                    task_switch_then_back()
                     if Event.registerFlag:
                         _thread.exit()
             except KeyboardInterrupt:

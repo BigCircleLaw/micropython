@@ -10,10 +10,14 @@
 #include "wb-lib/module_manager.h"
 #include "wb-lib/led.h"
 #include "wb-lib/hub.h"
+#include "mpconfigport.h"
+
+#include "freertos/task.h"
 
 STATIC mp_obj_t wonderbitd_init()
 {
     printf("This is wb init.\n");
+    printf("portTICK_PERIOD_MS's value is %d.\n", portTICK_PERIOD_MS);
     hub_init();
     led_set_color(RGB_OFF);
     // module_manager_init();
@@ -53,6 +57,14 @@ mp_obj_t wb_module_manager_send_a_data(mp_obj_t data)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(module_manager_send_a_data_obj, wb_module_manager_send_a_data);
 
+mp_obj_t wb__task_switch_then_back(void)
+{
+    MICROPY_EVENT_POLL_HOOK
+    ulTaskNotifyTake(pdFALSE, 1);
+    return mp_const_none; //返回计算的结果
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(task_switch_then_back_obj, wb__task_switch_then_back);
+
 extern const mp_obj_type_t wonderbits_data_format_type;
 extern const led_control_content_t mp_const_led_control_obj;
 extern const module_manager_content_t mp_const_module_manager_obj;
@@ -68,6 +80,7 @@ STATIC const mp_rom_map_elem_t wonderbits_globals_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR_init), MP_ROM_PTR(&wonderbitd_init_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_constrain), MP_ROM_PTR(&wb_constrain_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_send_a_data), MP_ROM_PTR(&module_manager_send_a_data_obj)},
+    {MP_OBJ_NEW_QSTR(MP_QSTR_task_switch_then_back), MP_ROM_PTR(&task_switch_then_back_obj)},
 
     {MP_OBJ_NEW_QSTR(MP_QSTR__Addr_Master), MP_ROM_INT(Addr_Master)},
     {MP_OBJ_NEW_QSTR(MP_QSTR__Addr_Broadcast), MP_ROM_INT(Addr_Broadcast)},

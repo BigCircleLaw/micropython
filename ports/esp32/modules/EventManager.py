@@ -202,6 +202,8 @@ class EventManager:
                             end='')
                     time.sleep(delay)
                 task_switch_then_back()
+                if Event.registerFlag:
+                    _thread.exit()
 
         _thread.stack_size(_THREAD_STACK_SIZE)
         _thread.start_new_thread(event_task_run, ())

@@ -52,13 +52,11 @@ class Event(object):
             cls.register_dict[index] = True
             time.sleep_ms(21)
             cls.register_dict.pop(index)
-        else:
-            print('Error: nothing event.')
 
     @classmethod
     def get_register_list(cls):
         if len(cls.register_dict) > 0:
             key_list = cls.register_dict.keys()
-            print(','.join(map(str, key_list)))
+            return ','.join(map(str, key_list))
         else:
-            print('Error: nothing event.')
+            return ''

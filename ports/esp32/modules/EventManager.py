@@ -136,6 +136,7 @@ class EventManager:
                   delta,
                   interval,
                   numFlag=None):
+        Event.register_add(target)
         if (valueType == self._BOOL_VALUE_TYPE and delta != None):
             print('Error: no have parameter.')
             return
@@ -202,7 +203,7 @@ class EventManager:
                             end='')
                     time.sleep(delay)
                 task_switch_then_back()
-                if Event.registerFlag:
+                if Event.get_register_state(target):
                     _thread.exit()
 
         _thread.stack_size(_THREAD_STACK_SIZE)
@@ -230,7 +231,7 @@ class EventManager:
                 ownData = self.module_list_value[position_of_list].copy()
             else:
                 ownData = self.module_list_value[position_of_list]
-                
+
             try:
                 while True:
                     bool_value, ownData = self._triggerDecide(
@@ -245,10 +246,10 @@ class EventManager:
                             func(self.module_list_value[position_of_list])
                         time.sleep(delay)
                     task_switch_then_back()
-                    if Event.registerFlag:
+                    if Event.get_register_state():
                         _thread.exit()
             except KeyboardInterrupt:
-                Event.registerFlag = True
+                Event.unregister()
                 _thread.exit()
 
         _thread.stack_size(_THREAD_STACK_SIZE)

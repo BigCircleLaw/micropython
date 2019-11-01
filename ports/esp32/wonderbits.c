@@ -60,7 +60,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(module_manager_send_a_data_obj, wb_module_manag
 mp_obj_t wb__task_switch_then_back(void)
 {
     MICROPY_EVENT_POLL_HOOK
-    ulTaskNotifyTake(pdFALSE, 1);
+    // ulTaskNotifyTake(pdFALSE, 1);
+    vTaskDelay(1);
     return mp_const_none; //返回计算的结果
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(task_switch_then_back_obj, wb__task_switch_then_back);

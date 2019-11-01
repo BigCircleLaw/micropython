@@ -173,11 +173,11 @@ class EventManager:
             # print(id(self.module_list_value[position_of_list]))
             while True:
                 # print(self.eventList[1])
-                # send_a_data(target)
+                send_a_data(target)
                 bool_value, ownData = self._triggerDecide(
                     valueType, actionType, ownData, position_of_list, delta,
                     numFlag)
-                # send_a_data(0xFF)
+                send_a_data(0xFF)
                 # print(bool_value, ownData)
                 if bool_value:
                     if valueType == self._BOOL_VALUE_TYPE:

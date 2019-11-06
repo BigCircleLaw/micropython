@@ -33,6 +33,7 @@ MICROPY_PY_USSL = 0
 MICROPY_SSL_AXTLS = 0
 MICROPY_FATFS = 1
 MICROPY_PY_BTREE = 1
+MICROPY_VFS_LFS2 = 1
 
 FROZEN_MANIFEST ?= boards/manifest.py
 
@@ -276,6 +277,9 @@ else
 COPT += -Os -DNDEBUG
 #LDFLAGS += --gc-sections
 endif
+
+# Options for mpy-cross
+MPY_CROSS_FLAGS += -march=xtensawin
 
 # Enable SPIRAM support if CONFIG_ESP32_SPIRAM_SUPPORT=y in sdkconfig
 ifeq ($(CONFIG_ESP32_SPIRAM_SUPPORT),y)

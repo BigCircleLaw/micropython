@@ -19,8 +19,8 @@ gc.collect()
 del gc
 time.sleep_ms(200)
 
-import _thread
-import wb
+# import _thread
+# import wb
 
 # def event_task_run(val):
 #     while True:

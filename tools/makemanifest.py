@@ -185,7 +185,8 @@ def freeze_internal(kind, path, script, opt):
                     kind = k
                     break
             else:
-                raise FreezeError('unsupported file type {}'.format(script))
+                print('warn: unsupported file type, skipped freeze: {}'.format(script))
+                return
         wanted_extension = extension_kind[kind]
         if not script.endswith(wanted_extension):
             raise FreezeError('expecting a {} file, got {}'.format(wanted_extension, script))
@@ -269,13 +270,13 @@ def main():
         return
 
     # Freeze paths as strings
-    res, output_str = system([MAKE_FROZEN] + str_paths)
+    res, output_str = system([sys.executable, MAKE_FROZEN] + str_paths)
     if res != 0:
         print('error freezing strings {}: {}'.format(str_paths, output_str))
         sys.exit(1)
 
     # Freeze .mpy files
-    res, output_mpy = system([MPY_TOOL, '-f', '-q', args.build_dir + '/genhdr/qstrdefs.preprocessed.h'] + mpy_files)
+    res, output_mpy = system([sys.executable, MPY_TOOL, '-f', '-q', args.build_dir + '/genhdr/qstrdefs.preprocessed.h'] + mpy_files)
     if res != 0:
         print('error freezing mpy {}: {}'.format(mpy_files, output_mpy))
         sys.exit(1)

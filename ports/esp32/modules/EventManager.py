@@ -17,6 +17,7 @@ def _size_comparison(new_value, old_value):
 
 
 def _str_trun_trigger(condition_str):
+    # print(condition_str)
     def func(v):
         # print(v)
         return eval(condition_str, {'x': v})

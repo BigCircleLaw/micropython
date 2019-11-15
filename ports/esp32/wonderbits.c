@@ -49,6 +49,20 @@ STATIC mp_obj_t wb_constrain(mp_obj_t amt, mp_obj_t low, mp_obj_t high)
 
 STATIC const MP_DEFINE_CONST_FUN_OBJ_3(wb_constrain_obj, wb_constrain);
 
+STATIC mp_obj_t wb_wb_map(size_t n_args, const mp_obj_t *args)
+{
+    mp_float_t _x, _in_min, _in_max, _out_min, _out_max;
+    _x = mp_obj_get_float(args[0]);
+    _in_min = mp_obj_get_float(args[1]);
+    _in_max = mp_obj_get_float(args[2]);
+    _out_min = mp_obj_get_float(args[3]);
+    _out_max = mp_obj_get_float(args[4]);
+    mp_float_t result = (_x - _in_min) * (_out_max - _out_min) / (_in_max - _in_min) + _out_min;
+    return MP_OBJ_FROM_PTR(mp_obj_new_float(result));
+}
+
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wb_wb_map_obj, 5, 5, wb_wb_map);
+
 mp_obj_t wb_module_manager_send_a_data(mp_obj_t data)
 {
     // module_manager_content_t *self=MP_OBJ_TO_PTR(self_in);  //从第一个参数里面取出对象的指针
@@ -80,6 +94,7 @@ STATIC const mp_rom_map_elem_t wonderbits_globals_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR_led), MP_ROM_PTR(&mp_const_led_control_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_init), MP_ROM_PTR(&wonderbitd_init_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_constrain), MP_ROM_PTR(&wb_constrain_obj)},
+    {MP_OBJ_NEW_QSTR(MP_QSTR_wb_map), MP_ROM_PTR(&wb_wb_map_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_send_a_data), MP_ROM_PTR(&module_manager_send_a_data_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_task_switch_then_back), MP_ROM_PTR(&task_switch_then_back_obj)},
 

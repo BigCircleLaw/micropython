@@ -1,7 +1,7 @@
-:mod:`bluetooth` --- low-level Bluetooth
-========================================
+:mod:`ubluetooth` --- low-level Bluetooth
+=========================================
 
-.. module:: bluetooth
+.. module:: ubluetooth
    :synopsis: Low-level Bluetooth radio functionality
 
 This module provides an interface to a Bluetooth controller on a board.
@@ -123,7 +123,7 @@ The event codes are::
     _IRQ_GATTC_INDICATE                  = const(1 << 14)
 
 In order to save space in the firmware, these constants are not included on the
-:mod:`bluetooth` module. Add the ones that you need from the list above to your
+:mod:`ubluetooth` module. Add the ones that you need from the list above to your
 program.
 
 
@@ -203,8 +203,8 @@ writes from a central to a given characteristic, use
     value.
 
     The **flags** are a bitwise-OR combination of the
-    :data:`bluetooth.FLAGS_READ`, :data:`bluetooth.FLAGS_WRITE` and
-    :data:`bluetooth.FLAGS_NOTIFY` values defined below.
+    :data:`ubluetooth.FLAG_READ`, :data:`ubluetooth.FLAG_WRITE` and
+    :data:`ubluetooth.FLAG_NOTIFY` values defined below.
 
     The return value is a list (one element per service) of tuples (each element
     is a value handle). Characteristics and descriptor handles are flattened
@@ -245,6 +245,17 @@ writes from a central to a given characteristic, use
     If *data* is specified, then the that value is sent to the central as part
     of the notification, avoiding the need for a separate read request. Note
     that this will not update the local value stored.
+
+.. method:: BLE.gatts_set_buffer(value_handle, len, append=False)
+
+    Sets the internal buffer size for a value in bytes. This will limit the
+    largest possible write that can be received. The default is 20.
+
+    Setting *append* to ``True`` will make all remote writes append to, rather
+    than replace, the current value. At most *len* bytes can be buffered in
+    this way. When you use :meth:`gatts_read <BLE.gatts_read>`, the value will
+    be cleared after reading. This feature is useful when implementing something
+    like the Nordic UART Service.
 
 
 Central Role (GATT Client)
@@ -321,6 +332,6 @@ Constructor
 Constants
 ---------
 
-.. data:: bluetooth.FLAG_READ
-          bluetooth.FLAG_WRITE
-          bluetooth.FLAG_NOTIFY
+.. data:: ubluetooth.FLAG_READ
+          ubluetooth.FLAG_WRITE
+          ubluetooth.FLAG_NOTIFY

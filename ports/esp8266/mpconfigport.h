@@ -94,10 +94,7 @@
 #define MICROPY_PY_STR_BYTES_CMP_WARN (1)
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_STREAMS_POSIX_API   (1)
-#define MICROPY_MODULE_FROZEN_STR   (1)
-#define MICROPY_MODULE_FROZEN_MPY   (1)
 #define MICROPY_MODULE_FROZEN_LEXER mp_lexer_new_from_str32
-#define MICROPY_QSTR_EXTRA_POOL     mp_qstr_frozen_const_pool
 
 #define MICROPY_FATFS_ENABLE_LFN       (1)
 #define MICROPY_FATFS_RPATH            (2)
@@ -140,8 +137,16 @@ void *esp_native_code_commit(void*, size_t);
 // printer for debugging output, goes to UART only
 extern const struct _mp_print_t mp_debug_print;
 
+#if MICROPY_VFS_FAT
 #define mp_type_fileio mp_type_vfs_fat_fileio
 #define mp_type_textio mp_type_vfs_fat_textio
+#elif MICROPY_VFS_LFS1
+#define mp_type_fileio mp_type_vfs_lfs1_fileio
+#define mp_type_textio mp_type_vfs_lfs1_textio
+#elif MICROPY_VFS_LFS2
+#define mp_type_fileio mp_type_vfs_lfs2_fileio
+#define mp_type_textio mp_type_vfs_lfs2_textio
+#endif
 
 // use vfs's functions for import stat and builtin open
 #define mp_import_stat mp_vfs_import_stat
@@ -169,23 +174,6 @@ extern const struct _mp_obj_module_t mp_module_onewire;
     { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&uos_module) }, \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
     { MP_ROM_QSTR(MP_QSTR__onewire), MP_ROM_PTR(&mp_module_onewire) }, \
-
-#define MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS \
-    { MP_ROM_QSTR(MP_QSTR_binascii), MP_ROM_PTR(&mp_module_ubinascii) }, \
-    { MP_ROM_QSTR(MP_QSTR_collections), MP_ROM_PTR(&mp_module_collections) }, \
-    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) }, \
-    { MP_ROM_QSTR(MP_QSTR_hashlib), MP_ROM_PTR(&mp_module_uhashlib) }, \
-    { MP_ROM_QSTR(MP_QSTR_io), MP_ROM_PTR(&mp_module_io) }, \
-    { MP_ROM_QSTR(MP_QSTR_json), MP_ROM_PTR(&mp_module_ujson) }, \
-    { MP_ROM_QSTR(MP_QSTR_os), MP_ROM_PTR(&uos_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_random), MP_ROM_PTR(&mp_module_urandom) }, \
-    { MP_ROM_QSTR(MP_QSTR_re), MP_ROM_PTR(&mp_module_ure) }, \
-    { MP_ROM_QSTR(MP_QSTR_select), MP_ROM_PTR(&mp_module_uselect) }, \
-    { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&mp_module_lwip) }, \
-    { MP_ROM_QSTR(MP_QSTR_ssl), MP_ROM_PTR(&mp_module_ussl) }, \
-    { MP_ROM_QSTR(MP_QSTR_struct), MP_ROM_PTR(&mp_module_ustruct) }, \
-    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&utime_module) }, \
-    { MP_ROM_QSTR(MP_QSTR_zlib), MP_ROM_PTR(&mp_module_uzlib) }, \
 
 #define MP_STATE_PORT MP_STATE_VM
 

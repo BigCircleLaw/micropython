@@ -22,7 +22,6 @@ QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 MICROPY_PY_USSL = 1
 MICROPY_SSL_AXTLS = 1
 AXTLS_DEFS_EXTRA = -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=4096
-MICROPY_FATFS ?= 1
 MICROPY_PY_BTREE ?= 1
 BTREE_DEFS_EXTRA = -DDEFPSIZE=1024 -DMINCACHE=3
 
@@ -147,12 +146,6 @@ LIB_SRC_C = $(addprefix lib/,\
 	utils/sys_stdio_mphal.c \
 	)
 
-ifeq ($(MICROPY_FATFS), 1)
-LIB_SRC_C += \
-	lib/oofatfs/ff.c \
-	lib/oofatfs/ffunicode.c
-endif
-
 DRIVERS_SRC_C = $(addprefix drivers/,\
 	bus/softspi.c \
 	dht/dht.c \
@@ -188,6 +181,15 @@ endif
 $(BUILD)/uart.o: $(CONFVARS_FILE)
 
 FROZEN_EXTRA_DEPS = $(CONFVARS_FILE)
+
+ifneq ($(FROZEN_MANIFEST)$(FROZEN_MPY_DIR),)
+CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
+CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+endif
+
+ifneq ($(FROZEN_MANIFEST)$(FROZEN_DIR),)
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
+endif
 
 .PHONY: deploy
 

@@ -128,6 +128,13 @@ jobs:
       after_failure:
         - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
 
+    # minimal unix port with tests
+    - stage: test
+      env: NAME="minimal unix port build and tests"
+      script:
+        - make ${MAKEOPTS} -C ports/unix minimal
+        - (cd tests && MICROPY_CPYTHON3=python3 MICROPY_MICROPYTHON=../ports/unix/micropython_minimal ./run-tests -e exception_chain -e self_type_check -e subclass_native_init -d basics)
+
     # windows port via mingw
     - stage: test
       env: NAME="windows port build via mingw"
@@ -232,3 +239,12 @@ jobs:
         - sudo apt-get install libnewlib-arm-none-eabi
       script:
         - make ${MAKEOPTS} -C ports/teensy
+
+    # powerpc port
+    - stage: test
+      env: NAME="powerpc port build"
+      install:
+        - sudo apt-get install gcc-powerpc64le-linux-gnu
+        - sudo apt-get install libc6-dev-ppc64el-cross
+      script:
+        - make ${MAKEOPTS} -C ports/powerpc CROSS_COMPILE=powerpc64le-linux-gnu-

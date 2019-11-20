@@ -5,6 +5,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/objarray.h"
+#include "py/objstr.h"
 
 #include "wb-lib/sender.h"
 #include "wb-lib/public.h"
@@ -184,10 +185,11 @@ static mp_obj_t wb_add_list(unsigned char val_type, unsigned char *buf, unsigned
     case 'O':
     case 'S':
     {
-        // mp_buffer_info_t bufinfo;
-        // mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
-        // ustrncpy((unsigned char *)bufinfo.buf, (buf + count), len);
-        *num = count + len;
+        unsigned char i;
+        for(i = 0; buf[count + i] != 0; i++);
+        data = mp_obj_new_str_copy(&mp_type_str,&buf[count], i);
+        *num = count + i + 1;
+        
         break;
     }
     case 'f':

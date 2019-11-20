@@ -163,12 +163,6 @@ LIB_SRC_C = $(addprefix lib/,\
 	timeutils/timeutils.c \
 	)
 
-# FatFS VFS support
-LIB_SRC_C += $(addprefix lib/,\
-	oofatfs/ff.c \
-	oofatfs/ffunicode.c \
-	)
-
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
@@ -188,6 +182,9 @@ CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
 MPY_CROSS_FLAGS += -mcache-lookup-bc
 endif
 
+ifneq ($(FROZEN_MANIFEST)$(FROZEN_DIR),)
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
+endif
 
 include $(TOP)/py/mkrules.mk
 
@@ -212,7 +209,7 @@ uninstall:
 
 # build synthetically fast interpreter for benchmarking
 fast:
-	$(MAKE) COPT="-O2 -DNDEBUG -fno-crossjumping" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_fast.h>"' BUILD=build-fast PROG=micropython_fast
+	$(MAKE) COPT="-O2 -DNDEBUG -fno-crossjumping" CFLAGS_EXTRA='-DMP_CONFIGFILE="<mpconfigport_fast.h>"' BUILD=build-fast PROG=micropython_fast FROZEN_MANIFEST=
 
 # build a minimal interpreter
 minimal:
@@ -254,6 +251,7 @@ coverage:
 	    -Wold-style-definition -Wpointer-arith -Wshadow -Wuninitialized -Wunused-parameter \
 	    -DMICROPY_UNIX_COVERAGE' \
 	    LDFLAGS_EXTRA='-fprofile-arcs -ftest-coverage' \
+	    MICROPY_VFS_FAT=1 MICROPY_VFS_LFS1=1 MICROPY_VFS_LFS2=1 \
 	    FROZEN_MANIFEST=manifest_coverage.py \
 	    BUILD=build-coverage PROG=micropython_coverage
 

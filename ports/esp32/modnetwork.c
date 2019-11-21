@@ -120,7 +120,8 @@ STATIC const wlan_if_obj_t wlan_sta_obj = {{&wlan_if_type}, WIFI_IF_STA};
 STATIC const wlan_if_obj_t wlan_ap_obj = {{&wlan_if_type}, WIFI_IF_AP};
 
 // Set to "true" if esp_wifi_start() was called
-static bool wifi_started = false;
+// static bool wifi_started = false;
+bool wifi_started = false;
 
 // Set to "true" if the STA interface is requested to be connected by the
 // user, used for automatic reassociation.
@@ -267,7 +268,8 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(get_wlan_obj, 0, 1, get_wlan);
 
-STATIC mp_obj_t esp_initialize() {
+// STATIC mp_obj_t esp_initialize() {
+mp_obj_t esp_initialize() {
     static int initialized = 0;
     if (!initialized) {
         ESP_LOGD("modnetwork", "Initializing TCP/IP");

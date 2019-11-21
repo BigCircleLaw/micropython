@@ -71,6 +71,14 @@ int vprintf_null(const char *format, va_list ap)
     return 0;
 }
 
+volatile uint32_t ticker_ticks_ms = 0;
+extern void mpython_music_tick(void);
+static void timer_1ms_ticker(void *args)
+{
+    ticker_ticks_ms += 1;
+    mpython_music_tick();
+}
+
 void mp_task(void *pvParameter)
 {
     volatile uint32_t sp = (uint32_t)get_sp();
@@ -121,6 +129,17 @@ soft_reset:
 
     // initialise peripherals
     machine_pins_init();
+	// add by zhang kaihua
+	// for music function
+	const esp_timer_create_args_t periodic_timer_args = {
+		.callback = &timer_1ms_ticker,
+		.name = "music tick timer"
+	};
+	esp_timer_handle_t periodic_timer;
+    ticker_ticks_ms = 0;
+	ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
+	ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 1000));
+
 
     // run boot-up scripts
     pyexec_frozen_module("_boot.py");

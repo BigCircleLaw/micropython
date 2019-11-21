@@ -142,6 +142,9 @@ INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include_bootloader
 INC_ESPCOMP += -I$(ESPCOMP)/console
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include/driver
+# mPython add
+INC_ESPCOMP += -I$(ESPCOMP)/nghttp/port/include
+INC_ESPCOMP += -I$(ESPCOMP)/nghttp/nghttp2/lib/includes
 INC_ESPCOMP += -I$(ESPCOMP)/efuse/include
 INC_ESPCOMP += -I$(ESPCOMP)/efuse/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/esp32/include
@@ -222,6 +225,18 @@ INC_ESPCOMP += -I$(ESPCOMP)/nghttp/port/include
 INC_ESPCOMP += -I$(ESPCOMP)/nghttp/nghttp2/lib/includes
 endif
 
+# mpython audio module includes (by jch)
+INC += -I$(TOP)/ports/esp32/codec/codec_lib/helix/include
+INC += -I$(TOP)/ports/esp32/codec/decoder/include
+INC += -I$(TOP)/ports/esp32/codec/include
+#		esp_http_client
+INC_ESPCOMP += -I$(ESPCOMP)/esp_http_client/include
+INC_ESPCOMP += -I$(ESPCOMP)/esp_http_client/lib/include
+#		tcp_transport
+INC_ESPCOMP += -I$(ESPCOMP)/tcp_transport/include
+#		esp_tls
+INC_ESPCOMP += -I$(ESPCOMP)/esp-tls
+
 ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
@@ -245,6 +260,9 @@ CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP)
 CFLAGS += -DIDF_VER=\"$(IDF_VER)\"
 CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 CFLAGS += -I$(BOARD_DIR)
+
+CFLAGS += -DARM -DCONFIG_AUDIO_HELIX    # 避免编译音频库出错
+CFLAGS += -Wno-unused-but-set-variable
 
 ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
 CFLAGS += -DMICROPY_ESP_IDF_4=1
@@ -333,6 +351,10 @@ SRC_C = \
 	mpthreadport.c \
 	machine_rtc.c \
 	machine_sdcard.c \
+	modmusic.c \
+	modmusictunes.c \
+	modradio.c \
+	machine_servo_pwm.c \
 	wonderbits.c \
 	wb_module_manager.c \
 	wb_data_format.c \
@@ -366,6 +388,41 @@ DRIVERS_SRC_C = $(addprefix drivers/,\
 	bus/softspi.c \
 	dht/dht.c \
 	)
+# 开机显示和异常打印功能模块
+STARTUP_SRC_C = $(addprefix startup/, \
+	oled.c \
+	i2c_master.c \
+	panic.c \
+	startup.c \
+	)
+# 音频功能模块
+CODEC_SRC_C = $(addprefix codec/,\
+	modcodec.c \
+	http_client.c \
+	audio_player.c \
+	audio_renderer.c \
+	url_codec.c \
+	local_file.c \
+	audio_recorder.c \
+	wav_head.c \
+	codec_lib/helix/src/bitstream.c \
+	codec_lib/helix/src/buffers.c \
+	codec_lib/helix/src/dct32.c \
+	codec_lib/helix/src/dequant.c \
+	codec_lib/helix/src/dqchan.c \
+	codec_lib/helix/src/huffman.c \
+	codec_lib/helix/src/hufftabs.c \
+	codec_lib/helix/src/imdct.c \
+	codec_lib/helix/src/mp3dec.c \
+	codec_lib/helix/src/mp3tabs.c \
+	codec_lib/helix/src/polyphase.c \
+	codec_lib/helix/src/scalfact.c \
+	codec_lib/helix/src/stproc.c \
+	codec_lib/helix/src/subband.c \
+	codec_lib/helix/src/trigtabs.c \
+	decoder/helix_mp3_decoder.c \
+	)
+
 
 OBJ_MP =
 OBJ_MP += $(PY_O)
@@ -374,8 +431,11 @@ OBJ_MP += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ_MP += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 OBJ_MP += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 
+OBJ_MP += $(addprefix $(BUILD)/, $(STARTUP_SRC_C:.c=.o))
+OBJ_MP += $(addprefix $(BUILD)/, $(CODEC_SRC_C:.c=.o))
+
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(EXTMOD_SRC_C) $(LIB_SRC_C) $(DRIVERS_SRC_C)
+SRC_QSTR += $(SRC_C) $(EXTMOD_SRC_C) $(LIB_SRC_C) $(DRIVERS_SRC_C) $(CODEC_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
 
@@ -561,6 +621,50 @@ ESPIDF_ETHERNET_O = $(patsubst %.c,%.o,\
     )
 endif
 
+ESPIDF_ESP_HTTP_CLIENT_O = $(addprefix $(ESPCOMP)/esp_http_client/,\
+	esp_http_client.o \
+	lib/http_auth.o \
+	lib/http_header.o \
+	lib/http_utils.o \
+	)
+
+ESPIDF_NGHTTP_O = $(addprefix $(ESPCOMP)/nghttp/,\
+	nghttp2/lib/nghttp2_http.o \
+	nghttp2/lib/nghttp2_version.o \
+	nghttp2/lib/nghttp2_mem.o \
+	nghttp2/lib/nghttp2_hd_huffman.o \
+	nghttp2/lib/nghttp2_rcbuf.o \
+	nghttp2/lib/nghttp2_callbacks.o \
+	nghttp2/lib/nghttp2_session.o \
+	nghttp2/lib/nghttp2_stream.o \
+	nghttp2/lib/nghttp2_hd.o \
+	nghttp2/lib/nghttp2_priority_spec.o \
+	nghttp2/lib/nghttp2_buf.o \
+	nghttp2/lib/nghttp2_option.o \
+	nghttp2/lib/nghttp2_npn.o \
+	nghttp2/lib/nghttp2_helper.o \
+	nghttp2/lib/nghttp2_frame.o \
+	nghttp2/lib/nghttp2_outbound_item.o \
+	nghttp2/lib/nghttp2_hd_huffman_data.o \
+	nghttp2/lib/nghttp2_pq.o \
+	nghttp2/lib/nghttp2_queue.o \
+	nghttp2/lib/nghttp2_submit.o \
+	nghttp2/lib/nghttp2_map.o \
+	port/http_parser.o \
+	)
+
+ESPIDF_TCP_TRANSPORT_O = $(addprefix $(ESPCOMP)/tcp_transport/,\
+	transport.o \
+	transport_ssl.o \
+	transport_tcp.o \
+	transport_utils.o \
+	transport_ws.o \
+	)
+
+ESPIDF_ESP_TLS_O = $(addprefix $(ESPCOMP)/esp-tls/,\
+	esp_tls.o \
+	)
+
 OBJ_ESPIDF =
 LIB_ESPIDF =
 BUILD_ESPIDF_LIB = $(BUILD)/esp-idf
@@ -613,6 +717,11 @@ $(eval $(call gen_espidf_lib_rule,xtensa,$(ESPIDF_XTENSA_O)))
 else
 $(eval $(call gen_espidf_lib_rule,ethernet,$(ESPIDF_ETHERNET_O)))
 endif
+
+$(eval $(call gen_espidf_lib_rule,nghttp,$(ESPIDF_NGHTTP_O)))
+$(eval $(call gen_espidf_lib_rule,esp_http_client,$(ESPIDF_ESP_HTTP_CLIENT_O)))
+$(eval $(call gen_espidf_lib_rule,tcp_transport,$(ESPIDF_TCP_TRANSPORT_O)))
+$(eval $(call gen_espidf_lib_rule,esp-tls,$(ESPIDF_ESP_TLS_O)))
 
 # Create all destination build dirs before compiling IDF source
 OBJ_ESPIDF_DIRS = $(sort $(dir $(OBJ_ESPIDF))) $(BUILD_ESPIDF_LIB) $(addprefix $(BUILD_ESPIDF_LIB)/,$(LIB_ESPIDF))
@@ -727,7 +836,7 @@ APP_LD_ARGS += -L$(ESPCOMP)/bt/controller/lib -lbtdm_app
 APP_LD_ARGS += -L$(ESPCOMP)/esp_wifi/lib_esp32 -lcore -lmesh -lnet80211 -lphy -lrtc -lpp -lsmartconfig -lcoexist
 else
 APP_LD_ARGS += $(ESPCOMP)/esp32/libhal.a
-APP_LD_ARGS += -L$(ESPCOMP)/esp32/lib -lcore -lmesh -lnet80211 -lphy -lrtc -lpp -lwpa -lsmartconfig -lcoexist -lwps -lwpa2
+APP_LD_ARGS += -L$(ESPCOMP)/esp32/lib -lcore -lmesh -lnet80211 -lphy -lrtc -lpp -lwpa -lsmartconfig -lcoexist -lwps -lwpa2 -lespnow
 endif
 APP_LD_ARGS += $(OBJ)
 APP_LD_ARGS += $(LIB)

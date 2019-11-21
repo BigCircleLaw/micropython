@@ -191,6 +191,9 @@ extern const struct _mp_obj_module_t mp_module_usocket;
 extern const struct _mp_obj_module_t mp_module_machine;
 extern const struct _mp_obj_module_t mp_module_network;
 extern const struct _mp_obj_module_t mp_module_onewire;
+extern const struct _mp_obj_module_t mp_music_module;
+extern const struct _mp_obj_module_t mp_module_audio;
+extern const struct _mp_obj_module_t mp_module_radio;
 extern const struct _mp_obj_module_t mp_module_wonderbits;    //这个是我们添加的，需要声明一下应用外部的struct
 
 #define MICROPY_PORT_BUILTIN_MODULES \
@@ -203,12 +206,17 @@ extern const struct _mp_obj_module_t mp_module_wonderbits;    //这个是我们�
     { MP_OBJ_NEW_QSTR(MP_QSTR_network), (mp_obj_t)&mp_module_network }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR__onewire), (mp_obj_t)&mp_module_onewire }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_uhashlib), (mp_obj_t)&mp_module_uhashlib }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_music), (mp_obj_t)&mp_music_module }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_audio), (mp_obj_t)&mp_module_audio }, \
+    { MP_OBJ_NEW_QSTR(MP_QSTR_radio), (mp_obj_t)&mp_module_radio }, \
     { MP_OBJ_NEW_QSTR(MP_QSTR_wb), (mp_obj_t)&mp_module_wonderbits }, \
     //这个是我们添加的modtest
 
 #define MP_STATE_PORT MP_STATE_VM
 
 struct _machine_timer_obj_t;
+
+
 
 #if MICROPY_BLUETOOTH_NIMBLE
 struct mp_bluetooth_nimble_root_pointers_t;
@@ -221,6 +229,7 @@ struct mp_bluetooth_nimble_root_pointers_t;
     const char *readline_hist[8]; \
     mp_obj_t machine_pin_irq_handler[40]; \
     struct _machine_timer_obj_t *machine_timer_obj_head; \
+    struct _music_data_t * music_data;\
     MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE
 
 // type definitions for the specific machine

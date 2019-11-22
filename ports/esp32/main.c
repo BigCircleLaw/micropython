@@ -43,6 +43,11 @@
 #include "esp_spiram.h"
 #endif
 
+#include "esp_timer.h"		// add by zkh
+#include "driver/timer.h"
+
+#include "startup/oled.h"
+
 #include "py/stackctrl.h"
 #include "py/nlr.h"
 #include "py/compile.h"
@@ -79,6 +84,50 @@ static void timer_1ms_ticker(void *args)
     mpython_music_tick();
 }
 
+void mpython_display_exception(mp_obj_t exc_in)
+{
+    mp_uint_t n, *values;
+    mp_obj_exception_get_traceback(exc_in, &n, &values);
+    if (1) {
+        vstr_t vstr;
+        mp_print_t print;
+        vstr_init_print(&vstr, 50, &print);
+        #if MICROPY_ENABLE_SOURCE_LINE
+        if (n >= 3) {
+            mp_printf(&print, "line %u\n", values[1]);
+        }
+        #endif
+        if (mp_obj_is_native_exception_instance(exc_in)) {
+            mp_obj_exception_t *exc = (mp_obj_exception_t*)MP_OBJ_TO_PTR(exc_in);
+            mp_printf(&print, "%q:\n  ", exc->base.type->name);
+            if (exc->args != NULL && exc->args->len != 0) {
+                mp_obj_print_helper(&print, exc->args->items[0], PRINT_STR);
+            }
+        }
+        oled_init();
+        oled_clear();
+        oled_print(vstr_null_terminated_str(&vstr), 0, 0);
+        oled_show();
+        vstr_clear(&vstr);
+        oled_deinit();
+    }
+}
+
+void mpython_stop_timer(void) {
+    // disable all timer and thread created by main.py
+    for (timer_group_t g = TIMER_GROUP_0; g < TIMER_GROUP_MAX; g++) {
+        for (timer_idx_t i = TIMER_0; i < TIMER_MAX; i++) {
+            timer_pause(g, i);
+        }
+    }
+}
+
+void mpython_stop_thread(void) {
+    #if MICROPY_PY_THREAD
+    mp_thread_deinit();
+    #endif  
+}
+
 void mp_task(void *pvParameter)
 {
     volatile uint32_t sp = (uint32_t)get_sp();
@@ -87,7 +136,6 @@ void mp_task(void *pvParameter)
 #endif
     uart_init();
     wb_uart_init();
-    led_init();
 
 // TODO: CONFIG_SPIRAM_SUPPORT is for 3.3 compatibility, remove after move to 4.0.
 #if CONFIG_ESP32_SPIRAM_SUPPORT || CONFIG_SPIRAM_SUPPORT
@@ -116,6 +164,14 @@ void mp_task(void *pvParameter)
 #endif
 
 soft_reset:
+    // // startup
+    // oled_init();
+    // oled_drawImg(ani_startup[24]);
+    // //oled_drawAnimation(ani_startup, 25, 50);
+    // //oled_clear();
+    // oled_show();
+    // oled_deinit();
+
     // initialise the stack pointer for the main thread
     mp_stack_set_top((void *)sp);
     mp_stack_set_limit(MP_TASK_STACK_SIZE - 1024);
@@ -131,14 +187,14 @@ soft_reset:
     machine_pins_init();
 	// add by zhang kaihua
 	// for music function
-	const esp_timer_create_args_t periodic_timer_args = {
-		.callback = &timer_1ms_ticker,
-		.name = "music tick timer"
-	};
-	esp_timer_handle_t periodic_timer;
-    ticker_ticks_ms = 0;
-	ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
-	ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 1000));
+	// const esp_timer_create_args_t periodic_timer_args = {
+	// 	.callback = &timer_1ms_ticker,
+	// 	.name = "music tick timer"
+	// };
+	// esp_timer_handle_t periodic_timer;
+    // ticker_ticks_ms = 0;
+	// ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
+	// ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 1000));
 
 
     // run boot-up scripts
@@ -182,6 +238,10 @@ soft_reset:
     // deinitialise peripherals
     machine_pins_deinit();
     usocket_events_deinit();
+
+    // esp_timer_stop(periodic_timer);
+    // esp_timer_delete(periodic_timer);
+    // MP_STATE_PORT(music_data) = NULL;
 
     mp_deinit();
     fflush(stdout);

@@ -164,13 +164,13 @@ void mp_task(void *pvParameter)
 #endif
 
 soft_reset:
-    // // startup
-    // oled_init();
-    // oled_drawImg(ani_startup[24]);
-    // //oled_drawAnimation(ani_startup, 25, 50);
-    // //oled_clear();
-    // oled_show();
-    // oled_deinit();
+    // startup
+    oled_init();
+    oled_drawImg(ani_startup[24]);
+    //oled_drawAnimation(ani_startup, 25, 50);
+    //oled_clear();
+    oled_show();
+    oled_deinit();
 
     // initialise the stack pointer for the main thread
     mp_stack_set_top((void *)sp);
@@ -187,14 +187,14 @@ soft_reset:
     machine_pins_init();
 	// add by zhang kaihua
 	// for music function
-	// const esp_timer_create_args_t periodic_timer_args = {
-	// 	.callback = &timer_1ms_ticker,
-	// 	.name = "music tick timer"
-	// };
-	// esp_timer_handle_t periodic_timer;
-    // ticker_ticks_ms = 0;
-	// ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
-	// ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 1000));
+	const esp_timer_create_args_t periodic_timer_args = {
+		.callback = &timer_1ms_ticker,
+		.name = "music tick timer"
+	};
+	esp_timer_handle_t periodic_timer;
+    ticker_ticks_ms = 0;
+	ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
+	ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 1000));
 
 
     // run boot-up scripts
@@ -239,9 +239,9 @@ soft_reset:
     machine_pins_deinit();
     usocket_events_deinit();
 
-    // esp_timer_stop(periodic_timer);
-    // esp_timer_delete(periodic_timer);
-    // MP_STATE_PORT(music_data) = NULL;
+    esp_timer_stop(periodic_timer);
+    esp_timer_delete(periodic_timer);
+    MP_STATE_PORT(music_data) = NULL;
 
     mp_deinit();
     fflush(stdout);

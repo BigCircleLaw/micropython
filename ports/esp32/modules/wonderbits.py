@@ -4,7 +4,7 @@ from system import _module_info
 from public import DEVICE_TYPE
 import os
 
-VERSION = (0, 2, 5)
+VERSION = (0, 2, 6)
 __version__ = '.'.join(map(str, VERSION))
 
 state = 'main.py' not in os.listdir()

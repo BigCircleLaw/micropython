@@ -75,6 +75,9 @@ DEVICE_TYPE['transmitter'] = 0x36
 DEVICE_TYPE['audioPlayer'] = 0x37
 DEVICE_TYPE['fingerprint'] = 0x38
 DEVICE_TYPE['ledMatrix'] = 0x39
+# DEVICE_TYPE['SuperCar'] = 0x3A
+DEVICE_TYPE['multimeter'] = 0x3B
+DEVICE_TYPE['pressurePad'] = 0x3C
 
 _CMD_LED = 0x00
 _CMD_ASK_UID = 0x01

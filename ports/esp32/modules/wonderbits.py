@@ -66,3 +66,4 @@ class wb_tool(object):
 
 
 from Event import Event
+from Wonder import wonder

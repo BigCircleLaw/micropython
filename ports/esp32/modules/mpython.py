@@ -120,7 +120,10 @@ class OLED(SSD1106_I2C):
                         mask = mask << 1
                     w = w + 8
                     i = i + 1
-            x = x + width + 1
+            x = x + width
+            self.buffer[(page - 1)* 128 + x] = 0x00
+            self.buffer[page * 128 + x] = 0x00
+            x = x + 1
 
 class Accelerometer():
     """  """

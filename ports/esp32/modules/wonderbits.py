@@ -5,7 +5,7 @@ from public import DEVICE_TYPE
 import os
 
 VERSION = (0, 3, 0)
-__version__ = '.'.join(map(str, VERSION))
+__version__ = 'mPython'+'.'.join(map(str, VERSION))
 
 state = 'main.py' not in os.listdir()
 
@@ -66,4 +66,4 @@ class wb_tool(object):
 
 
 from Event import Event
-from Wonder import wonder
+from Pi import Pi

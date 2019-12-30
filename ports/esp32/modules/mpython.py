@@ -65,6 +65,7 @@ class OLED(SSD1106_I2C):
 
     def __init__(self):
         super().__init__(128, 64, i2c)
+        self.f = None
         self.f = Font()
         if self.f is None:
             raise Exception('font load failed')
@@ -132,11 +133,18 @@ class Accelerometer():
     RES_10_BIT = 2
 
     def __init__(self):
-        self.addr = 38
+        self.addr = 0x68 # 104
         self.i2c = i2c
-        self.set_resolustion(Accelerometer.RES_10_BIT)
+        # self.set_resolustion(Accelerometer.RES_10_BIT)
+        # self.set_range(Accelerometer.RANGE_2G)
+        # self._writeReg(0x11,0)                  # set power mode = normal
+        self._writeReg(0x6B, 0x00)	#解除休眠状态
+        self._writeReg(0x6B, 0x00)	#解除休眠状态
+        self._writeReg(0x19, 49)
+        self._writeReg(0x1A, 0x06)   # 带宽5HZ，实际采样率 = 1000 / （1 + 寄存器0x19）HZ = 20Hz
+        
         self.set_range(Accelerometer.RANGE_2G)
-        self._writeReg(0x11,0)                  # set power mode = normal
+        self._writeReg(0x1B, 0x10)  # 0x00:250 0x08:500 0x10:1000 0x18:2000
 
     def _readReg(self, reg, nbytes=1):
         return self.i2c.readfrom_mem(self.addr, reg, nbytes)
@@ -152,10 +160,11 @@ class Accelerometer():
  
     def set_range(self, range):
         self.range = range
-        format = self._readReg(0x0f,1)
-        format = format[0] & ~0x3
-        format |= range
-        self._writeReg(0x0f,format)
+        format = self._readReg(0x1C,1)
+        format = format[0] & ~0x18
+        format |= (range<<3)
+        # format |= range
+        self._writeReg(0x1C, format) # 0x00:2 0x08:4 0x10:8 0x18:16
 
     def set_offset(self, x=None, y=None, z=None):
         for i in (x, y, z):
@@ -173,9 +182,10 @@ class Accelerometer():
         retry = 0
         if (retry < 5):
             try:
-                buf = self._readReg(0x02, 2)
-                x = ustruct.unpack('h', buf)[0]
+                buf = self._readReg(0x3D, 2)
+                x = -ustruct.unpack('>h', buf)[0]
                 return x / 4 / 4096 * 2**self.range
+                # return x 
             except:
                 retry = retry + 1
         else:
@@ -185,9 +195,10 @@ class Accelerometer():
         retry = 0
         if (retry < 5):
             try:
-                buf = self._readReg(0x04, 2)
-                y = ustruct.unpack('h', buf)[0]
+                buf = self._readReg(0x3B, 2)
+                y = ustruct.unpack('>h', buf)[0]
                 return y / 4 / 4096 * 2**self.range
+                # return y
             except:
                 retry = retry + 1
         else:
@@ -197,13 +208,15 @@ class Accelerometer():
         retry = 0
         if (retry < 5):
             try:
-                buf = self._readReg(0x06, 2)
-                z = ustruct.unpack('h', buf)[0]
+                buf = self._readReg(0x3F, 2)
+                z = ustruct.unpack('>h', buf)[0]
                 return z / 4 / 4096 * 2**self.range
+                # return z 
             except:
                 retry = retry + 1
         else:
             raise Exception("i2c read/write error!")
+
 
 
 class BME280(object):

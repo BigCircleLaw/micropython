@@ -5,7 +5,7 @@ from public import DEVICE_TYPE
 import os
 
 VERSION = (0, 3, 0)
-__version__ = 'mPython'+'.'.join(map(str, VERSION))
+__version__ = 'mPython-'+'.'.join(map(str, VERSION))
 
 state = 'main.py' not in os.listdir()
 

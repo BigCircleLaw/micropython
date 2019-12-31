@@ -120,9 +120,9 @@ class OLED(SSD1106_I2C):
                     w = w + 8
                     i = i + 1
             x = x + width
-            self.buffer[(page - 1)* 128 + x] = 0x00
-            self.buffer[page * 128 + x] = 0x00
+            self.line(x, y, x, y + self.f.height - 1, 0)
             x = x + 1
+
 
 class Accelerometer():
     """  """
@@ -139,7 +139,7 @@ class Accelerometer():
         self.i2c = i2c
         self.set_resolustion(Accelerometer.RES_10_BIT)
         self.set_range(Accelerometer.RANGE_2G)
-        self._writeReg(0x11,0)                  # set power mode = normal
+        self._writeReg(0x11, 0)  # set power mode = normal
 
     def _readReg(self, reg, nbytes=1):
         return self.i2c.readfrom_mem(self.addr, reg, nbytes)
@@ -147,18 +147,18 @@ class Accelerometer():
     def _writeReg(self, reg, value):
         self.i2c.writeto_mem(self.addr, reg, value.to_bytes(1, 'little'))
 
-    def set_resolustion(self,resolution):
-        format = self._readReg(0x0f,1)
+    def set_resolustion(self, resolution):
+        format = self._readReg(0x0f, 1)
         format = format[0] & ~0xC
-        format |= (resolution<<2)
-        self._writeReg(0x0f,format)
- 
+        format |= (resolution << 2)
+        self._writeReg(0x0f, format)
+
     def set_range(self, range):
         self.range = range
-        format = self._readReg(0x0f,1)
+        format = self._readReg(0x0f, 1)
         format = format[0] & ~0x3
         format |= range
-        self._writeReg(0x0f,format)
+        self._writeReg(0x0f, format)
 
     def set_offset(self, x=None, y=None, z=None):
         for i in (x, y, z):
@@ -166,11 +166,11 @@ class Accelerometer():
                 if i < -1 or i > 1:
                     raise ValueError("out of range,only offset 1 gravity")
         if x != None:
-            self._writeReg(0x39, int(round(x/0.0039)))
+            self._writeReg(0x39, int(round(x / 0.0039)))
         elif y != None:
-            self._writeReg(0x38, int(round(y/0.0039)))
+            self._writeReg(0x38, int(round(y / 0.0039)))
         elif z != None:
-            self._writeReg(0x3A, int(round(z/0.0039)))
+            self._writeReg(0x3A, int(round(z / 0.0039)))
 
     def get_x(self):
         retry = 0
@@ -250,7 +250,8 @@ class BME280(object):
                 buff = i2c.readfrom(self.addr, 3)
                 T = (((buff[0] << 8) | buff[1]) << 4) | (buff[2] >> 4 & 0x0F)
                 c1 = (T / 16384.0 - self.dig_T[0] / 1024.0) * self.dig_T[1]
-                c2 = ((T / 131072.0 - self.dig_T[0] / 8192.0) * (T / 131072.0 - self.dig_T[0] / 8192.0)) * self.dig_T[2]
+                c2 = ((T / 131072.0 - self.dig_T[0] / 8192.0) *
+                      (T / 131072.0 - self.dig_T[0] / 8192.0)) * self.dig_T[2]
                 self.tFine = c1 + c2
                 return self.tFine / 5120.0
             except:
@@ -269,7 +270,8 @@ class BME280(object):
                 c2 = c1 * c1 * self.dig_P[5] / 32768.0
                 c2 = c2 + c1 * self.dig_P[4] * 2.0
                 c2 = c2 / 4.0 + self.dig_P[3] * 65536.0
-                c1 = (self.dig_P[2] * c1 * c1 / 524288.0 + self.dig_P[1] * c1) / 524288.0
+                c1 = (self.dig_P[2] * c1 * c1 / 524288.0 +
+                      self.dig_P[1] * c1) / 524288.0
                 c1 = (1.0 + c1 / 32768.0) * self.dig_P[0]
                 if c1 == 0.0:
                     return 0
@@ -317,13 +319,16 @@ class PinMode(object):
     OUT_DRAIN = 5
 
 
-pins_remap_esp32 = (33, 32, 35, 34, 39, 0, 16, 17, 26, 25, 36, 2, -1, 18, 19, 21, 5, -1, -1, 22, 23, -1, -1, 27, 14, 12,
-                    13, 15, 4)
+pins_remap_esp32 = (33, 32, 35, 34, 39, 0, 16, 17, 26, 25, 36, 2, -1, 18, 19,
+                    21, 5, -1, -1, 22, 23, -1, -1, 27, 14, 12, 13, 15, 4)
 
 
 class MPythonPin():
     def __init__(self, pin, mode=PinMode.IN, pull=None):
-        if mode not in [PinMode.IN, PinMode.OUT, PinMode.PWM, PinMode.ANALOG, PinMode.OUT_DRAIN]:
+        if mode not in [
+                PinMode.IN, PinMode.OUT, PinMode.PWM, PinMode.ANALOG,
+                PinMode.OUT_DRAIN
+        ]:
             raise TypeError("mode must be 'IN, OUT, PWM, ANALOG,OUT_DRAIN'")
         if pin == 4:
             raise TypeError("P4 is used for light sensor")
@@ -346,7 +351,10 @@ class MPythonPin():
                 raise TypeError('OUT_DRAIN not supported on P%d' % pin)
             self.Pin = Pin(self.id, Pin.OPEN_DRAIN, pull)
         if mode == PinMode.PWM:
-            if pin not in [0, 1, 5, 6, 7, 8, 9, 11, 13, 14, 15, 16, 19, 20, 23, 24, 25, 26, 27, 28]:
+            if pin not in [
+                    0, 1, 5, 6, 7, 8, 9, 11, 13, 14, 15, 16, 19, 20, 23, 24,
+                    25, 26, 27, 28
+            ]:
                 raise TypeError('PWM not supported on P%d' % pin)
             self.pwm = PWM(Pin(self.id), duty=0)
         if mode == PinMode.ANALOG:
@@ -374,7 +382,7 @@ class MPythonPin():
     def read_analog(self):
         if not self.mode == PinMode.ANALOG:
             raise TypeError('the pin is not in ANALOG mode')
-        # calibration esp32 ADC 
+        # calibration esp32 ADC
         calibration_val = 0
         val = int(sum([self.adc.read() for i in range(50)]) / 50)
         if 0 < val <= 2855:
@@ -436,11 +444,14 @@ class wifi:
         while (self.sta.ifconfig()[0] == '0.0.0.0'):
             if time.ticks_diff(time.time(), start) > timeout:
                 print("")
-                raise OSError("Timeout!,check your wifi password and keep your network unblocked")
+                raise OSError(
+                    "Timeout!,check your wifi password and keep your network unblocked"
+                )
             print(".", end="")
             time.sleep_ms(500)
         print("")
-        print('WiFi(%s,%sdBm) Connection Successful, Config:%s' % (ssid, str(wifi_dbm), str(self.sta.ifconfig())))
+        print('WiFi(%s,%sdBm) Connection Successful, Config:%s' %
+              (ssid, str(wifi_dbm), str(self.sta.ifconfig())))
 
     def disconnectWiFi(self):
         if self.sta.isconnected():
@@ -448,18 +459,18 @@ class wifi:
         self.sta.active(False)
         print('disconnect WiFi...')
 
-    def enable_APWiFi(self, essid, password=b'',channel=10):
+    def enable_APWiFi(self, essid, password=b'', channel=10):
         self.ap.active(True)
         if password:
-            authmode=4
+            authmode = 4
         else:
-            authmode=0
-        self.ap.config(essid=essid,password=password,authmode=authmode, channel=channel)
+            authmode = 0
+        self.ap.config(
+            essid=essid, password=password, authmode=authmode, channel=channel)
 
     def disable_APWiFi(self):
         self.ap.active(False)
         print('disable AP WiFi...')
-
 
 
 # display

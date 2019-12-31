@@ -5,8 +5,7 @@ from public import DEVICE_TYPE
 import os
 
 VERSION = (0, 3, 0)
-__version__ = 'wb_mPython'+'.'.join(map(str, VERSION))
-
+__version__ = 'wb_mPython-' + '.'.join(map(str, VERSION))
 state = 'main.py' not in os.listdir()
 
 _m_info = wb.module_manager.get_type_num_buf()

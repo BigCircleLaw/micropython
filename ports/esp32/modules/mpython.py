@@ -147,12 +147,7 @@ class Accelerometer():
         self._writeReg(0x1A, 0x06)   # 带宽5HZ，实际采样率 = 1000 / （1 + 寄存器0x19）HZ = 20Hz
         
         self.set_range(Accelerometer.RANGE_2G)
-<<<<<<< HEAD
         self._writeReg(0x1B, 0x10)  # 0x00:250 0x08:500 0x10:1000 0x18:2000
-=======
-        self._writeReg(0x11, 0)  # set power mode = normal
->>>>>>> mPython
-
     def _readReg(self, reg, nbytes=1):
         return self.i2c.readfrom_mem(self.addr, reg, nbytes)
 

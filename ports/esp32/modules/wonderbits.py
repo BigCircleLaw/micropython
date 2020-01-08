@@ -4,13 +4,8 @@ from system import _module_info
 from public import DEVICE_TYPE
 import os
 
-<<<<<<< HEAD
-VERSION = (0, 3, 1)
-__version__ = 'wb_mPython-' + '.'.join(map(str, VERSION))
-=======
 VERSION = (0, 3, 2)
-__version__ = 'mPython-'+'.'.join(map(str, VERSION))
->>>>>>> mPython
+__version__ = 'wb_mPython-' + '.'.join(map(str, VERSION))
 
 state = 'main.py' not in os.listdir()
 

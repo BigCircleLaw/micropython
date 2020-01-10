@@ -503,6 +503,9 @@ rgb.write()
 # light sensor
 light = ADC(Pin(39))
 light.atten(light.ATTN_11DB)
+# light2 sensor
+light2 = ADC(Pin(35))
+light2.atten(light.ATTN_11DB)
 
 # sound sensor
 sound = ADC(Pin(36))

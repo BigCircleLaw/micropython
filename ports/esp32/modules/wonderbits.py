@@ -4,10 +4,13 @@ from system import _module_info
 from public import DEVICE_TYPE
 import os
 
-VERSION = (0, 3, 2)
+VERSION = (0, 3, 3)
+
+
 __version__ = 'wb_mPython-' + '.'.join(map(str, VERSION))
 
 state = 'main.py' not in os.listdir()
+
 
 _m_info = wb.module_manager.get_type_num_buf()
 # print(_m_info)
@@ -26,9 +29,11 @@ if _m_info[0] > 0:
             # print('from ' + mStr2 + ' import ' + mStr2)
             # if state:
             for j in range(_m_info[_m_value_position]):
-                exec(mStr + str(j + 1) + '=' + mStr2 + '(' + str(j + 1) + ')')
+                s = mStr + str(j + 1)
+                exec(s + '=' + mStr2 + '(' + str(j + 1) + ')')
                 # print(mStr + str(j + 1) + '=' + mStr2 + '(' + str(j + 1) + ')')
-                _module_info.append(mStr + str(j + 1))
+                print('create ' + s)
+                _module_info.append(s)
 
             _m_value_position = _m_value_position + 1
         else:

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,32 +24,3 @@
  * THE SOFTWARE.
  */
 
-#include <stdlib.h>
-
-#include "py/obj.h"
-
-#if !MICROPY_OBJ_IMMEDIATE_OBJS
-typedef struct _mp_obj_none_t {
-    mp_obj_base_t base;
-} mp_obj_none_t;
-#endif
-
-STATIC void none_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    (void)self_in;
-    if (MICROPY_PY_UJSON && kind == PRINT_JSON) {
-        mp_print_str(print, "null");
-    } else {
-        mp_print_str(print, "None");
-    }
-}
-
-const mp_obj_type_t mp_type_NoneType = {
-    { &mp_type_type },
-    .name = MP_QSTR_NoneType,
-    .print = none_print,
-    .unary_op = mp_generic_unary_op,
-};
-
-#if !MICROPY_OBJ_IMMEDIATE_OBJS
-const mp_obj_none_t mp_const_none_obj = {{&mp_type_NoneType}};
-#endif

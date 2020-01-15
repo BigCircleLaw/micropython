@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,32 +24,22 @@
  * THE SOFTWARE.
  */
 
-#include <stdlib.h>
+// This config is mostly used to ensure that the nan-boxing object model
+// continues to build (i.e. catches usage of mp_obj_t that don't work with
+// this representation).
 
-#include "py/obj.h"
+// select nan-boxing object model
+#define MICROPY_OBJ_REPR (MICROPY_OBJ_REPR_D)
 
-#if !MICROPY_OBJ_IMMEDIATE_OBJS
-typedef struct _mp_obj_none_t {
-    mp_obj_base_t base;
-} mp_obj_none_t;
-#endif
+// native emitters don't work with nan-boxing
+#define MICROPY_EMIT_X86 (0)
+#define MICROPY_EMIT_X64 (0)
+#define MICROPY_EMIT_THUMB (0)
+#define MICROPY_EMIT_ARM (0)
 
-STATIC void none_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    (void)self_in;
-    if (MICROPY_PY_UJSON && kind == PRINT_JSON) {
-        mp_print_str(print, "null");
-    } else {
-        mp_print_str(print, "None");
-    }
-}
+#include <stdint.h>
 
-const mp_obj_type_t mp_type_NoneType = {
-    { &mp_type_type },
-    .name = MP_QSTR_NoneType,
-    .print = none_print,
-    .unary_op = mp_generic_unary_op,
-};
-
-#if !MICROPY_OBJ_IMMEDIATE_OBJS
-const mp_obj_none_t mp_const_none_obj = {{&mp_type_NoneType}};
-#endif
+typedef int64_t mp_int_t;
+typedef uint64_t mp_uint_t;
+#define UINT_FMT "%llu"
+#define INT_FMT "%lld"

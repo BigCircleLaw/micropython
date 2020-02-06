@@ -444,6 +444,16 @@ typedef mp_obj_t (*mp_fun_var_t)(size_t n, const mp_obj_t *);
 // this arg to mp_map_lookup().
 typedef mp_obj_t (*mp_fun_kw_t)(size_t n, const mp_obj_t *, mp_map_t *);
 
+// Flags for type behaviour (mp_obj_type_t.flags)
+// If MP_TYPE_FLAG_NEEDS_FULL_EQ_TEST is clear then all the following hold:
+//  (a) the type only implements the __eq__ operator and not the __ne__ operator;
+//  (b) __eq__ returns a boolean result (False or True);
+//  (c) __eq__ is reflexive (A==A is True);
+//  (d) the type can't be equal to an instance of any different class that also clears this flag.
+#define MP_TYPE_FLAG_IS_SUBCLASSED (0x0001)
+#define MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS (0x0002)
+#define MP_TYPE_FLAG_NEEDS_FULL_EQ_TEST (0x0004)
+
 typedef enum {
     PRINT_STR = 0,
     PRINT_REPR = 1,
@@ -665,6 +675,12 @@ extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 // Note: these are kept as macros because inline functions sometimes use much
 // more code space than the equivalent macros, depending on the compiler.
 #define mp_obj_is_type(o, t) (mp_obj_is_obj(o) && (((mp_obj_base_t*)MP_OBJ_TO_PTR(o))->type == (t))) // this does not work for checking int, str or fun; use below macros for that
+#if MICROPY_OBJ_IMMEDIATE_OBJS
+// bool's are immediates, not real objects, so test for the 2 possible values.
+#define mp_obj_is_bool(o) ((o) == mp_const_false || (o) == mp_const_true)
+#else
+#define mp_obj_is_bool(o) mp_obj_is_type(o, &mp_type_bool)
+#endif
 #define mp_obj_is_int(o) (mp_obj_is_small_int(o) || mp_obj_is_type(o, &mp_type_int))
 #define mp_obj_is_str(o) (mp_obj_is_qstr(o) || mp_obj_is_type(o, &mp_type_str))
 #define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && ((mp_obj_base_t*)MP_OBJ_TO_PTR(o))->type->binary_op == mp_obj_str_binary_op))
@@ -719,9 +735,10 @@ void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc);
 
 bool mp_obj_is_true(mp_obj_t arg);
 bool mp_obj_is_callable(mp_obj_t o_in);
+mp_obj_t mp_obj_equal_not_equal(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2);
 bool mp_obj_equal(mp_obj_t o1, mp_obj_t o2);
 
-static inline bool mp_obj_is_integer(mp_const_obj_t o) { return mp_obj_is_int(o) || mp_obj_is_type(o, &mp_type_bool); } // returns true if o is bool, small int or long int
+static inline bool mp_obj_is_integer(mp_const_obj_t o) { return mp_obj_is_int(o) || mp_obj_is_bool(o); } // returns true if o is bool, small int or long int
 mp_int_t mp_obj_get_int(mp_const_obj_t arg);
 mp_int_t mp_obj_get_int_truncated(mp_const_obj_t arg);
 bool mp_obj_get_int_maybe(mp_const_obj_t arg, mp_int_t *value);

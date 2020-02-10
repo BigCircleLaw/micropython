@@ -88,10 +88,6 @@ class SSD1106(framebuf.FrameBuffer):
             self.write_data(self.buffer[i*128:(i+1)*128])   # send one page display data
     
     def refresh(self, start_x, start_y, end_x, end_y):
-        if start_x > end_x:
-            start_x, end_x = end_x,start_x
-        if start_y > end_y:
-            start_y, end_y = end_y,start_y
         start_y = start_y // 8
         end_y = end_y // 8
         # print('({},{}),({},{})'.format(start_y, end_y,start_x,end_x))

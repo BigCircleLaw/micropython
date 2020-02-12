@@ -365,6 +365,7 @@ SRC_C = \
 	wb-lib/sender.c \
 	wb-lib/tool.c \
 	wb-lib/uart.c \
+	wb-lib/utf8_2_gb2312.c \
 	$(wildcard $(BOARD_DIR)/*.c) \
 	$(SRC_MOD)
 

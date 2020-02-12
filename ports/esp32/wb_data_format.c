@@ -36,28 +36,28 @@ mp_obj_t data_format_get_receive_list(mp_obj_t self_in, mp_obj_t data)
     // module_obj_content_t *self=MP_OBJ_TO_PTR(self_in);  //从第一个参数里面取出对象的指针
     data_format_content_t *self = MP_OBJ_TO_PTR(self_in);
 
-#if WONDERBITS_DEBUG
+    #if WONDERBITS_DEBUG
     printf("receive list\n");
-#endif
+    #endif
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
     unsigned char count = 0;
     mp_obj_list_t *list = new_list(self->len_translate);
 
-#if WONDERBITS_DEBUG
+    #if WONDERBITS_DEBUG
     printf("length : %d\n", self->len_translate);
-#endif
+    #endif
 
     for (unsigned char i = 0; i < self->len_translate; i++)
     {
         list->items[i] = wb_add_list(self->buffer_translate[i], bufinfo.buf, &count, 0);
-#if WONDERBITS_DEBUG
+        #if WONDERBITS_DEBUG
         printf("list : %c:%d,", self->buffer_translate[i], ((unsigned char *)bufinfo.buf)[i]);
-#endif
+        #endif
     }
-#if WONDERBITS_DEBUG
+    #if WONDERBITS_DEBUG
     printf("\n");
-#endif
+    #endif
 
     return MP_OBJ_FROM_PTR(list); //返回计算的结果
 }
@@ -69,9 +69,9 @@ mp_obj_t data_format_get_send_list(mp_obj_t self_in, mp_obj_t data)
     // module_obj_content_t *self=MP_OBJ_TO_PTR(self_in);  //从第一个参数里面取出对象的指针
     data_format_content_t *self = MP_OBJ_TO_PTR(self_in);
 
-#if WONDERBITS_DEBUG
+    #if WONDERBITS_DEBUG
     printf("get_send_list\n");
-#endif
+    #endif
 
     mp_obj_t *list_items;
     size_t len;
@@ -89,14 +89,14 @@ mp_obj_t data_format_get_send_list(mp_obj_t self_in, mp_obj_t data)
             printf("Format error! index : %d\n", i);
         }
     }
-#if WONDERBITS_DEBUG
+    #if WONDERBITS_DEBUG
     printf("data : ");
     for (unsigned char i = 0; i < count; i++)
     {
         printf("%d,", self->buffer[i]);
     }
     printf("\n");
-#endif
+    #endif
     mp_obj_array_t *result = MP_OBJ_TO_PTR(mp_obj_new_memoryview('B',
                                                                  count,
                                                                  self->buffer));

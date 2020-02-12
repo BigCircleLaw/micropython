@@ -487,14 +487,21 @@ class wifi:
 # display
 if 60 in i2c.scan():
     oled = OLED()
-    display = oled
+else:
+    oled = None
+display = oled
 
 # 3 axis accelerometer
-accelerometer = Accelerometer()
+if 0x68 in i2c.scan():
+    accelerometer = Accelerometer()
+else:
+    accelerometer = None
 
 # bm280
 if 119 in i2c.scan():
     bme280 = BME280()
+else:
+    bme280 = None
 
 # 3 rgb leds
 rgb = NeoPixel(Pin(17, Pin.OUT), 3, 3, 1)

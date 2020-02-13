@@ -10,6 +10,7 @@
 #include "wb-lib/sender.h"
 #include "wb-lib/public.h"
 #include "wb-lib/tool.h"
+#include "wb-lib/utf8_2_gb2312.h"
 
 static bool wb_add_data(unsigned char val_type, unsigned char *buf, mp_obj_t data, unsigned char *num);
 static mp_obj_t wb_add_list(unsigned char val_type, unsigned char *buf, unsigned char *num, unsigned char len);
@@ -105,10 +106,31 @@ mp_obj_t data_format_get_send_list(mp_obj_t self_in, mp_obj_t data)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(data_format_get_send_list_obj, data_format_get_send_list);
 
+//定义DataFormat.utf8_2_gb2312函数
+mp_obj_t data_format_utf8_2_gb2312(mp_obj_t self_in, mp_obj_t utf8_str)
+{
+
+#if WONDERBITS_DEBUG
+    printf("data_format_utf8_2_gb2312\n");
+#endif
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(utf8_str, &bufinfo, MP_BUFFER_READ);
+
+    unsigned char gb2312_str[bufinfo.len];
+
+    size_t gb2312_len = Utf8ToGb2312(bufinfo.buf, bufinfo.len, gb2312_str);
+
+    mp_obj_t result = mp_obj_new_str_copy(&mp_type_bytes, gb2312_str, gb2312_len);
+
+    return MP_OBJ_FROM_PTR(result); //返回计算的结果
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(data_format_utf8_2_gb2312_obj, data_format_utf8_2_gb2312);
 //定义type的locals_dict_type
 STATIC const mp_rom_map_elem_t data_format_locals_dict_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR_get_data_list), MP_ROM_PTR(&data_format_get_receive_list_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_get_list), MP_ROM_PTR(&data_format_get_send_list_obj)},
+    {MP_OBJ_NEW_QSTR(MP_QSTR_utf8_2_gb2312), MP_ROM_PTR(&data_format_utf8_2_gb2312_obj)},
 
 };
 //这个定义字典的宏定义
@@ -186,10 +208,11 @@ static mp_obj_t wb_add_list(unsigned char val_type, unsigned char *buf, unsigned
     case 'S':
     {
         unsigned char i;
-        for(i = 0; buf[count + i] != 0; i++);
-        data = mp_obj_new_str_copy(&mp_type_str,&buf[count], i);
+        for (i = 0; buf[count + i] != 0; i++)
+            ;
+        data = mp_obj_new_str_copy(&mp_type_str, &buf[count], i);
         *num = count + i + 1;
-        
+
         break;
     }
     case 'f':

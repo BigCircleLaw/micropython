@@ -383,11 +383,6 @@ typedef struct _mp_rom_map_elem_t {
     mp_rom_obj_t value;
 } mp_rom_map_elem_t;
 
-// TODO maybe have a truncated mp_map_t for fixed tables, since alloc=used
-// put alloc last in the structure, so the truncated version does not need it
-// this would save 1 ROM word for all ROM objects that have a locals_dict
-// would also need a trucated dict structure
-
 typedef struct _mp_map_t {
     size_t all_keys_are_qstrs : 1;
     size_t is_fixed : 1;    // a fixed array that can't be modified; must also be ordered
@@ -712,6 +707,9 @@ mp_obj_t mp_obj_new_exception_arg1(const mp_obj_type_t *exc_type, mp_obj_t arg);
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args);
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const char *msg);
 mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const char *fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
+#ifdef va_start
+mp_obj_t mp_obj_new_exception_msg_varg2(const mp_obj_type_t *exc_type, const char *fmt, va_list arg); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
+#endif
 mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table);
 mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table);
 mp_obj_t mp_obj_new_fun_asm(size_t n_args, const void *fun_data, mp_uint_t type_sig);

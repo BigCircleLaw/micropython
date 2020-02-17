@@ -84,3 +84,13 @@ class ModuleObj(object):
 # def _value_comparison(newValue, oldValue, varyValue):
 #     return abs(newValue - oldValue) >= varyValue, oldValue if abs(
 #         newValue - oldValue) < varyValue else newValue
+
+def splice_str(*content):
+    text = ''
+    for i in content:
+        if isinstance(i, float):
+            i = round(i, 2)
+        if not isinstance(i, str):
+            i = str(i)
+        text += i + ' '
+    return text

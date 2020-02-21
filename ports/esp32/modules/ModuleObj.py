@@ -1,6 +1,7 @@
 # ModuleObj.py
 # from syspublic import  *
 from wb import _Addr_Error, _TYPE_REQUEST, _CMD_LED, _CMD_GET_VERSION
+from wb import float_2_str
 
 from ModuleManager import moduleManager as mMag
 import time
@@ -89,7 +90,7 @@ def splice_str(*content):
     text = ''
     for i in content:
         if isinstance(i, float):
-            i = round(i, 2)
+            i = float_2_str(i)
         if not isinstance(i, str):
             i = str(i)
         text += i + ' '

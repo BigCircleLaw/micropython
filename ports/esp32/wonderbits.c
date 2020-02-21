@@ -3,6 +3,7 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
+#include "py/objstr.h"
 
 #include "wb-lib/syspublic.h"
 #include "wb-lib/public.h"
@@ -80,6 +81,34 @@ mp_obj_t wb__task_switch_then_back(void)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(task_switch_then_back_obj, wb__task_switch_then_back);
 
+mp_obj_t wb_float_2_str(mp_obj_t data)
+{
+    mp_float_t num_float;
+    num_float = mp_obj_get_float(data);
+    unsigned char str[20], j = 0;
+    long int int_num;
+    if (num_float < 0)
+    {
+        num_float = -num_float;
+        if ((num_float + 0.005) > 0.01)
+            str[j++] = '-';
+    }
+    num_float = num_float + 0.005;
+    int_num = (long int)num_float;
+    j += sprintf((char *)(str + j), "%ld", int_num);
+    int_num = (num_float - int_num) * 100;
+    if (int_num != 0)
+        j += sprintf((char *)(str + j), ".%02ld", int_num);
+    
+    // str[j++] = ' ';
+    // str[j++] = 0;
+    
+    mp_obj_t result = mp_obj_new_str_copy(&mp_type_str, str, j);
+     
+    return MP_OBJ_FROM_PTR(result); //返回计算的结果
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(wb_float_2_str_obj, wb_float_2_str);
+
 extern const mp_obj_type_t wonderbits_data_format_type;
 extern const led_control_content_t mp_const_led_control_obj;
 extern const module_manager_content_t mp_const_module_manager_obj;
@@ -92,11 +121,13 @@ STATIC const mp_rom_map_elem_t wonderbits_globals_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR_module_manager), MP_ROM_PTR(&mp_const_module_manager_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_hub), MP_ROM_PTR(&mp_const_frame_hub_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_led), MP_ROM_PTR(&mp_const_led_control_obj)},
+    
     {MP_OBJ_NEW_QSTR(MP_QSTR_init), MP_ROM_PTR(&wonderbitd_init_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_constrain), MP_ROM_PTR(&wb_constrain_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_wb_map), MP_ROM_PTR(&wb_wb_map_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_send_a_data), MP_ROM_PTR(&module_manager_send_a_data_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_task_switch_then_back), MP_ROM_PTR(&task_switch_then_back_obj)},
+    {MP_OBJ_NEW_QSTR(MP_QSTR_float_2_str), MP_ROM_PTR(&wb_float_2_str_obj)},
 
     {MP_OBJ_NEW_QSTR(MP_QSTR__Addr_Master), MP_ROM_INT(Addr_Master)},
     {MP_OBJ_NEW_QSTR(MP_QSTR__Addr_Broadcast), MP_ROM_INT(Addr_Broadcast)},

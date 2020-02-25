@@ -9,7 +9,6 @@
 #include "wb-lib/syspublic.h"
 #include "wb-lib/led.h"
 
-
 mp_obj_t led_control_red(mp_obj_t self_in) { 	
 
     led_set_color(RGB_R);

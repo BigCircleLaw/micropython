@@ -79,8 +79,8 @@ class OLED(SSD1106_I2C):
                 x = x + self.width
                 continue
             width, bytes_per_line = ustruct.unpack('HH', data[:4])
-            # print('character [%d]: width = %d, bytes_per_line = %d' % (ord(c)
-            # , width, bytes_per_line))
+            # print('character [%d]: width = %d, bytes_per_line = %d' %
+            #       (ord(c), width, bytes_per_line))
             for h in range(0, self.f.height):
                 w = 0
                 i = 0
@@ -123,6 +123,23 @@ class OLED(SSD1106_I2C):
             x = x + width
             self.line(x, y, x, y + self.f.height - 1, 0)
             x = x + 1
+
+    def show_length(self, s):
+        if self.f is None:
+            return
+        len_ = 0
+        for c in s:
+            data = self.f.GetCharacterData(c)
+            if data is None:
+                x = x + self.width
+                continue
+            width, bytes_per_line = ustruct.unpack('HH', data[:4])
+            len_ += width + 1
+        return len_
+
+    def erase(self, start_x, start_y, end_x, end_y):
+        for i in range(start_x, end_x):
+            self.line(i, start_y, i, end_y, 0)
 
 
 class Accelerometer():

@@ -4,7 +4,7 @@ from system import _module_info
 from public import DEVICE_TYPE
 import os
 
-VERSION = (0, 4, 1)
+VERSION = (0, 4, 2)
 
 
 __version__ = 'wonderbits-' + '.'.join(map(str, VERSION))

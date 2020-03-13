@@ -257,8 +257,10 @@ INC_ESPCOMP += -I$(ESPCOMP)/esp_http_client/include
 INC_ESPCOMP += -I$(ESPCOMP)/esp_http_client/lib/include
 #		tcp_transport
 INC_ESPCOMP += -I$(ESPCOMP)/tcp_transport/include
+INC_ESPCOMP += -I$(ESPCOMP)/tcp_transport/private_include
 #		esp_tls
 INC_ESPCOMP += -I$(ESPCOMP)/esp-tls
+INC_ESPCOMP += -I$(ESPCOMP)/esp-tls/private_include
 
 INC_NEWLIB += -I$(ESPCOMP)/newlib/platform_include
 INC_NEWLIB += -I$(ESPCOMP)/newlib/include
@@ -699,13 +701,14 @@ ESPIDF_NGHTTP_O = $(addprefix $(ESPCOMP)/nghttp/,\
 	port/http_parser.o \
 	)
 
-ESPIDF_TCP_TRANSPORT_O = $(addprefix $(ESPCOMP)/tcp_transport/,\
-	transport.o \
-	transport_ssl.o \
-	transport_tcp.o \
-	transport_utils.o \
-	transport_ws.o \
-	)
+ESPIDF_TCP_TRANSPORT_O = $(patsubst %.c,%.o, $(wildcard $(ESPCOMP)/tcp_transport/*.c)) 
+# ESPIDF_TCP_TRANSPORT_O = $(addprefix $(ESPCOMP)/tcp_transport/,\
+# 	transport.o \
+# 	transport_ssl.o \
+# 	transport_tcp.o \
+# 	transport_utils.o \
+# 	transport_ws.o \
+# 	)
 
 ESPIDF_ESP_TLS_O = $(addprefix $(ESPCOMP)/esp-tls/,\
 	esp_tls.o \
@@ -877,7 +880,7 @@ APP_LD_ARGS += $(LIBC_LIBM)
 ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
 APP_LD_ARGS += -L$(ESPCOMP)/xtensa/esp32 -lhal
 APP_LD_ARGS += -L$(ESPCOMP)/bt/controller/lib -lbtdm_app
-APP_LD_ARGS += -L$(ESPCOMP)/esp_wifi/lib_esp32 -lcore -lmesh -lnet80211 -lphy -lrtc -lpp -lsmartconfig -lcoexist
+APP_LD_ARGS += -L$(ESPCOMP)/esp_wifi/lib_esp32 -lcore -lmesh -lnet80211 -lphy -lrtc -lpp -lsmartconfig -lcoexist -lespnow
 else
 APP_LD_ARGS += $(ESPCOMP)/esp32/libhal.a
 APP_LD_ARGS += -L$(ESPCOMP)/bt/lib -lbtdm_app

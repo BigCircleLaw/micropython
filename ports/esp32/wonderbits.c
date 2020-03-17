@@ -111,6 +111,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(wb_float_2_str_obj, wb_float_2_str);
 
 extern const mp_obj_type_t wonderbits_data_format_type;
 // extern const mp_obj_type_t wonderbits_position_record_type;
+extern const mp_obj_type_t wb_mpython_sound_type;
 
 extern const led_control_content_t mp_const_led_control_obj;
 extern const module_manager_content_t mp_const_module_manager_obj;
@@ -121,6 +122,7 @@ extern const frame_hub_content_t mp_const_frame_hub_obj;
 STATIC const mp_rom_map_elem_t wonderbits_globals_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_wb)}, //这个对应python层面的__name__ 属性
     {MP_OBJ_NEW_QSTR(MP_QSTR__DataFormat), MP_ROM_PTR(&wonderbits_data_format_type)},
+    {MP_OBJ_NEW_QSTR(MP_QSTR_Sound), MP_ROM_PTR(&wb_mpython_sound_type)},
     // {MP_OBJ_NEW_QSTR(MP_QSTR__position_record), MP_ROM_PTR(&wonderbits_position_record_type)},
 
     {MP_OBJ_NEW_QSTR(MP_QSTR_module_manager), MP_ROM_PTR(&mp_const_module_manager_obj)},

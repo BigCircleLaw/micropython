@@ -17,6 +17,8 @@ from esp import dht_readinto
 from time import sleep_ms, sleep_us, sleep
 from framebuf import FrameBuffer
 
+from wb import Sound
+
 i2c = I2C(scl=Pin(Pin.P19), sda=Pin(Pin.P20), freq=400000)
 
 
@@ -532,8 +534,7 @@ light2 = ADC(Pin(35))
 light2.atten(light.ATTN_11DB)
 
 # sound sensor
-sound = ADC(Pin(36))
-sound.atten(sound.ATTN_11DB)
+sound = Sound(ADC(Pin(36)))
 
 # buttons
 button_a = Pin(0, Pin.IN, Pin.PULL_UP)

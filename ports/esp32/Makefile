@@ -383,6 +383,7 @@ SRC_C = \
 	wb_data_format.c \
 	wb_frame_hub.c \
 	wb_led_control.c \
+	mod_mpython_sound.c \
 	wb-lib/hub.c \
 	wb-lib/led.c \
 	wb-lib/module_manager.c\

@@ -146,9 +146,6 @@ INC_ESPCOMP += -I$(ESPCOMP)/bootloader_support/include_bootloader
 INC_ESPCOMP += -I$(ESPCOMP)/console
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include
 INC_ESPCOMP += -I$(ESPCOMP)/driver/include/driver
-# mPython add
-INC_ESPCOMP += -I$(ESPCOMP)/nghttp/port/include
-INC_ESPCOMP += -I$(ESPCOMP)/nghttp/nghttp2/lib/includes
 INC_ESPCOMP += -I$(ESPCOMP)/efuse/include
 INC_ESPCOMP += -I$(ESPCOMP)/efuse/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/esp32/include
@@ -157,6 +154,10 @@ INC_ESPCOMP += -I$(ESPCOMP)/soc/include
 INC_ESPCOMP += -I$(ESPCOMP)/soc/esp32/include
 INC_ESPCOMP += -I$(ESPCOMP)/heap/include
 INC_ESPCOMP += -I$(ESPCOMP)/log/include
+# mPython add
+INC_ESPCOMP += -I$(ESPCOMP)/newlib/platform_include
+INC_ESPCOMP += -I$(ESPCOMP)/newlib/include
+# end
 INC_ESPCOMP += -I$(ESPCOMP)/nvs_flash/include
 INC_ESPCOMP += -I$(ESPCOMP)/freertos/include
 INC_ESPCOMP += -I$(ESPCOMP)/esp_ringbuf/include
@@ -189,6 +190,7 @@ INC_ESPCOMP += -I$(ESPCOMP)/esp_event/private_include
 INC_ESPCOMP += -I$(ESPCOMP)/esp_rom/include
 INC_ESPCOMP += -I$(ESPCOMP)/esp_wifi/include
 INC_ESPCOMP += -I$(ESPCOMP)/esp_wifi/esp32/include
+INC_ESPCOMP += -I$(ESPCOMP)/lwip/port/esp32/include/arch
 INC_ESPCOMP += -I$(ESPCOMP)/lwip/include/apps/sntp
 INC_ESPCOMP += -I$(ESPCOMP)/spi_flash/private_include
 INC_ESPCOMP += -I$(ESPCOMP)/wpa_supplicant/include/esp_supplicant
@@ -248,23 +250,6 @@ INC_ESPCOMP += -I$(ESPCOMP)/nimble/esp-hci/include
 endif
 endif
 
-# mpython audio module includes (by jch)
-INC += -I$(TOP)/ports/esp32/codec/codec_lib/helix/include
-INC += -I$(TOP)/ports/esp32/codec/decoder/include
-INC += -I$(TOP)/ports/esp32/codec/include
-#		esp_http_client
-INC_ESPCOMP += -I$(ESPCOMP)/esp_http_client/include
-INC_ESPCOMP += -I$(ESPCOMP)/esp_http_client/lib/include
-#		tcp_transport
-INC_ESPCOMP += -I$(ESPCOMP)/tcp_transport/include
-INC_ESPCOMP += -I$(ESPCOMP)/tcp_transport/private_include
-#		esp_tls
-INC_ESPCOMP += -I$(ESPCOMP)/esp-tls
-INC_ESPCOMP += -I$(ESPCOMP)/esp-tls/private_include
-
-INC_NEWLIB += -I$(ESPCOMP)/newlib/platform_include
-INC_NEWLIB += -I$(ESPCOMP)/newlib/include
-
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
 CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
@@ -278,13 +263,10 @@ CFLAGS_COMMON = -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfie
 	-DESP_PLATFORM
 
 CFLAGS_BASE = -std=gnu99 $(CFLAGS_COMMON) -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"' -DHAVE_CONFIG_H
-CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP) $(INC_NEWLIB)
+CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP)
 CFLAGS += -DIDF_VER=\"$(IDF_VER)\"
 CFLAGS += $(CFLAGS_MOD) $(CFLAGS_EXTRA)
 CFLAGS += -I$(BOARD_DIR)
-
-CFLAGS += -DARM -DCONFIG_AUDIO_HELIX    # 避免编译音频库出错
-CFLAGS += -Wno-unused-but-set-variable
 
 ifeq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH_V4))
 CFLAGS += -DMICROPY_ESP_IDF_4=1
@@ -412,6 +394,10 @@ DRIVERS_SRC_C = $(addprefix drivers/,\
 	bus/softspi.c \
 	dht/dht.c \
 	)
+	
+# mpython audio module includes (by jch)
+
+
 # 开机显示和异常打印功能模块
 STARTUP_SRC_C = $(addprefix startup/, \
 	oled.c \
@@ -420,13 +406,18 @@ STARTUP_SRC_C = $(addprefix startup/, \
 	startup.c \
 	)
 # 音频功能模块
+INC += -I$(TOP)/ports/esp32/codec/codec_lib/helix/include
+INC += -I$(TOP)/ports/esp32/codec/decoder/include
+INC += -I$(TOP)/ports/esp32/codec/include
+CFLAGS += -DARM -DCONFIG_AUDIO_HELIX    # 避免编译音频库出错
+CFLAGS += -Wno-unused-but-set-variable
 CODEC_SRC_C = $(addprefix codec/,\
-	modcodec.c \
-	http_client.c \
 	audio_player.c \
-	audio_renderer.c \
 	url_codec.c \
 	local_file.c \
+	modcodec.c \
+	http_client.c \
+	audio_renderer.c \
 	audio_recorder.c \
 	wav_head.c \
 	codec_lib/helix/src/bitstream.c \
@@ -537,7 +528,7 @@ $(BUILD)/$(ESPCOMP)/freertos/xtensa_context.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_intr_asm.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_vectors.o: CFLAGS = $(CFLAGS_ASM)
 $(BUILD)/$(ESPCOMP)/freertos/xtensa_vector_defaults.o: CFLAGS = $(CFLAGS_ASM)
-$(BUILD)/$(ESPCOMP)/freertos/%.o: CFLAGS = $(CFLAGS_BASE) -I. -I$(BUILD) $(INC_ESPCOMP) $(INC_NEWLIB) -I$(ESPCOMP)/freertos/include/freertos -D_ESP_FREERTOS_INTERNAL
+$(BUILD)/$(ESPCOMP)/freertos/%.o: CFLAGS = $(CFLAGS_BASE) -I. -I$(BUILD) $(INC_ESPCOMP) -I$(ESPCOMP)/freertos/include/freertos -D_ESP_FREERTOS_INTERNAL
 ESPIDF_FREERTOS_O = \
 	$(patsubst %.c,%.o,$(wildcard $(ESPCOMP)/freertos/*.c)) \
 	$(patsubst %.S,%.o,$(wildcard $(ESPCOMP)/freertos/*.S)) \
@@ -670,51 +661,6 @@ ESPIDF_BT_NIMBLE_O = $(patsubst %.c,%.o,\
 endif
 endif
 
-ESPIDF_ESP_HTTP_CLIENT_O = $(addprefix $(ESPCOMP)/esp_http_client/,\
-	esp_http_client.o \
-	lib/http_auth.o \
-	lib/http_header.o \
-	lib/http_utils.o \
-	)
-
-ESPIDF_NGHTTP_O = $(addprefix $(ESPCOMP)/nghttp/,\
-	nghttp2/lib/nghttp2_http.o \
-	nghttp2/lib/nghttp2_version.o \
-	nghttp2/lib/nghttp2_mem.o \
-	nghttp2/lib/nghttp2_hd_huffman.o \
-	nghttp2/lib/nghttp2_rcbuf.o \
-	nghttp2/lib/nghttp2_callbacks.o \
-	nghttp2/lib/nghttp2_session.o \
-	nghttp2/lib/nghttp2_stream.o \
-	nghttp2/lib/nghttp2_hd.o \
-	nghttp2/lib/nghttp2_priority_spec.o \
-	nghttp2/lib/nghttp2_buf.o \
-	nghttp2/lib/nghttp2_option.o \
-	nghttp2/lib/nghttp2_npn.o \
-	nghttp2/lib/nghttp2_helper.o \
-	nghttp2/lib/nghttp2_frame.o \
-	nghttp2/lib/nghttp2_outbound_item.o \
-	nghttp2/lib/nghttp2_hd_huffman_data.o \
-	nghttp2/lib/nghttp2_pq.o \
-	nghttp2/lib/nghttp2_queue.o \
-	nghttp2/lib/nghttp2_submit.o \
-	nghttp2/lib/nghttp2_map.o \
-	port/http_parser.o \
-	)
-
-ESPIDF_TCP_TRANSPORT_O = $(patsubst %.c,%.o, $(wildcard $(ESPCOMP)/tcp_transport/*.c)) 
-# ESPIDF_TCP_TRANSPORT_O = $(addprefix $(ESPCOMP)/tcp_transport/,\
-# 	transport.o \
-# 	transport_ssl.o \
-# 	transport_tcp.o \
-# 	transport_utils.o \
-# 	transport_ws.o \
-# 	)
-
-ESPIDF_ESP_TLS_O = $(addprefix $(ESPCOMP)/esp-tls/,\
-	esp_tls.o \
-	)
-
 OBJ_ESPIDF =
 LIB_ESPIDF =
 BUILD_ESPIDF_LIB = $(BUILD)/esp-idf
@@ -766,10 +712,76 @@ else
 $(eval $(call gen_espidf_lib_rule,ethernet,$(ESPIDF_ETHERNET_O)))
 endif
 
+######################################################################
+# add esp componets for audio 
+# nghttp
+CFLAGS += -I$(ESPCOMP)/nghttp/port/include
+CFLAGS += -I$(ESPCOMP)/nghttp/nghttp2/lib/includes
+ESPIDF_NGHTTP_O = $(patsubst %.c,%.o, $(wildcard $(ESPCOMP)/nghttp/port/*.c)) 
+# ESPIDF_NGHTTP_O = $(addprefix $(ESPCOMP)/nghttp/,\
+# 	nghttp2/lib/nghttp2_http.o \
+# 	nghttp2/lib/nghttp2_version.o \
+# 	nghttp2/lib/nghttp2_mem.o \
+# 	nghttp2/lib/nghttp2_hd_huffman.o \
+# 	nghttp2/lib/nghttp2_rcbuf.o \
+# 	nghttp2/lib/nghttp2_callbacks.o \
+# 	nghttp2/lib/nghttp2_session.o \
+# 	nghttp2/lib/nghttp2_stream.o \
+# 	nghttp2/lib/nghttp2_hd.o \
+# 	nghttp2/lib/nghttp2_priority_spec.o \
+# 	nghttp2/lib/nghttp2_buf.o \
+# 	nghttp2/lib/nghttp2_option.o \
+# 	nghttp2/lib/nghttp2_npn.o \
+# 	nghttp2/lib/nghttp2_helper.o \
+# 	nghttp2/lib/nghttp2_frame.o \
+# 	nghttp2/lib/nghttp2_outbound_item.o \
+# 	nghttp2/lib/nghttp2_hd_huffman_data.o \
+# 	nghttp2/lib/nghttp2_pq.o \
+# 	nghttp2/lib/nghttp2_queue.o \
+# 	nghttp2/lib/nghttp2_submit.o \
+# 	nghttp2/lib/nghttp2_map.o \
+# 	port/http_parser.o \
+# 	)
 $(eval $(call gen_espidf_lib_rule,nghttp,$(ESPIDF_NGHTTP_O)))
+# esp_http_client
+CFLAGS += -I$(ESPCOMP)/esp_http_client/include
+CFLAGS += -I$(ESPCOMP)/esp_http_client/lib/include
+ESPIDF_ESP_HTTP_CLIENT_O = $(patsubst %.c,%.o, \
+	$(wildcard $(ESPCOMP)/esp_http_client/*.c) \
+	$(wildcard $(ESPCOMP)/esp_http_client/lib/*.c))
+# ESPIDF_ESP_HTTP_CLIENT_O = $(addprefix $(ESPCOMP)/esp_http_client/,\
+# 	esp_http_client.o \
+# 	lib/http_auth.o \
+# 	lib/http_header.o \
+# 	lib/http_utils.o \
+# 	)
 $(eval $(call gen_espidf_lib_rule,esp_http_client,$(ESPIDF_ESP_HTTP_CLIENT_O)))
+# esp_websocket_client
+CFLAGS += -I$(ESPCOMP)/esp_websocket_client/include
+ESPIDF_ESP_WEBSOCKET_O = $(patsubst %.c,%.o, $(wildcard $(ESPCOMP)/esp_websocket_client/*.c))
+$(eval $(call gen_espidf_lib_rule,esp_websocket_client,$(ESPIDF_ESP_WEBSOCKET_O)))
+# tcp_transport
+CFLAGS += -I$(ESPCOMP)/tcp_transport/include
+CFLAGS += -I$(ESPCOMP)/tcp_transport/private_include
+ESPIDF_TCP_TRANSPORT_O = $(patsubst %.c,%.o, $(wildcard $(ESPCOMP)/tcp_transport/*.c)) 
+# ESPIDF_TCP_TRANSPORT_O = $(addprefix $(ESPCOMP)/tcp_transport/,\
+# 	transport.o \
+# 	transport_ssl.o \
+# 	transport_tcp.o \
+# 	transport_utils.o \
+# 	transport_ws.o \
+# 	)
+
 $(eval $(call gen_espidf_lib_rule,tcp_transport,$(ESPIDF_TCP_TRANSPORT_O)))
+# esp_tls
+CFLAGS += -I$(ESPCOMP)/esp-tls
+CFLAGS += -I$(ESPCOMP)/esp-tls/private_include
+ESPIDF_ESP_TLS_O = $(patsubst %.c,%.o, $(wildcard $(ESPCOMP)/esp-tls/*.c))
+# ESPIDF_ESP_TLS_O = $(addprefix $(ESPCOMP)/esp-tls/,\
+# 	esp_tls.o \
+# 	)
 $(eval $(call gen_espidf_lib_rule,esp-tls,$(ESPIDF_ESP_TLS_O)))
+#############################################################################
 
 # Create all destination build dirs before compiling IDF source
 OBJ_ESPIDF_DIRS = $(sort $(dir $(OBJ_ESPIDF))) $(BUILD_ESPIDF_LIB) $(addprefix $(BUILD_ESPIDF_LIB)/,$(LIB_ESPIDF))

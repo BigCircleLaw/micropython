@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-03-16 11:19:05
- * @LastEditTime: 2020-03-16 16:24:02
+ * @LastEditTime: 2020-03-23 17:59:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wb-micropython\ports\esp32\mod_mpython_sound.c
@@ -108,7 +108,7 @@ STATIC mp_obj_t sound_read(size_t n_args, const mp_obj_t *args)
     }
     else
     {
-        val = record[80] - record[20];
+        val = record[80] - record[20] - 20;
     }
     
     return MP_OBJ_NEW_SMALL_INT(val);

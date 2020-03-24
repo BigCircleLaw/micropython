@@ -28,8 +28,10 @@ _ADV_APPEARANCE_GENERIC_COMPUTER = const(128)
 
 
 class BLEUART:
-    def __init__(self, ble, name="mpy-uart", rxbuf=100):
+    def __init__(self, ble):
         self._ble = ble
+
+    def setup(self, name="mpy-uart", rxbuf=100):
         self._ble.active(True)
         self._ble.irq(handler=self._irq)
         ((self._tx_handle, self._rx_handle,),) = self._ble.gatts_register_services(
@@ -83,6 +85,7 @@ class BLEUART:
         for conn_handle in self._connections:
             self._ble.gap_disconnect(conn_handle)
         self._connections.clear()
+        self._ble.active(False)
 
     def _advertise(self, interval_us=500000):
         self._ble.gap_advertise(interval_us, adv_data=self._payload)

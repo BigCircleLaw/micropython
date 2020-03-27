@@ -17,6 +17,7 @@ del os
 gc.collect()
 
 del gc
+print('wb init end.')
 time.sleep_ms(200)
 
 # import _thread

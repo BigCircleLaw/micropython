@@ -5,19 +5,19 @@ import system
 import os
 import gc
 
+from public import RGB_R, RGB_B, RGB_G, RGB_LB, RGB_OFF, RGB_P, RGB_W, RGB_Y
+
 print(time.ticks_ms())
 if 'main.py' not in os.listdir():
     exec('from wonderbits import *')
 
 print(time.ticks_ms())
 
-from public import RGB_R, RGB_B, RGB_G, RGB_LB, RGB_OFF, RGB_P, RGB_W, RGB_Y
 
 del os
 gc.collect()
 
 del gc
-print('wb init end.')
 time.sleep_ms(200)
 
 # import _thread

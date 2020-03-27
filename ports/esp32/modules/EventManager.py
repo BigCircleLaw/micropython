@@ -244,7 +244,8 @@ class EventManager:
                             func(self.module_list_value[position_of_list].
                                  copy())
                         else:
-                            func(self.module_list_value[position_of_list])
+                            func((self.module_list_value[position_of_list] &
+                                  numFlag) != 0)
                         time.sleep(delay)
                     task_switch_then_back()
                     if Event.get_register_state():

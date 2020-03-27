@@ -72,3 +72,5 @@ class wb_tool(object):
 
 from Event import Event
 from Pi import Pi
+
+print('wb init end.')

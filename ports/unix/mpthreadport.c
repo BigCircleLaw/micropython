@@ -85,7 +85,7 @@ STATIC void mp_thread_gc(int signo, siginfo_t *info, void *context) {
         void **ptrs = (void **)(void *)MP_STATE_THREAD(pystack_start);
         gc_collect_root(ptrs, (MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start)) / sizeof(void *));
         #endif
-        #if defined (__APPLE__)
+        #if defined(__APPLE__)
         sem_post(thread_signal_done_p);
         #else
         sem_post(&thread_signal_done);
@@ -221,7 +221,11 @@ void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
 
     // adjust stack_size to provide room to recover from hitting the limit
     // this value seems to be about right for both 32-bit and 64-bit builds
-    *stack_size -= 8192;
+    if (*stack_size >= 2 * 8192) {
+        *stack_size -= 8192;
+    } else {
+        *stack_size /= 2;
+    }
 
     // add thread to linked list of all threads
     thread_t *th = malloc(sizeof(thread_t));

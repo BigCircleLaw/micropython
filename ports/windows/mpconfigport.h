@@ -142,15 +142,15 @@ extern const struct _mp_print_t mp_stderr_print;
 
 // type definitions for the specific machine
 
-#if defined( __MINGW32__ ) && defined( __LP64__ )
+#if defined(__MINGW32__) && defined(__LP64__)
 typedef long mp_int_t; // must be pointer size
 typedef unsigned long mp_uint_t; // must be pointer size
-#elif defined ( __MINGW32__ ) && defined( _WIN64 )
+#elif defined(__MINGW32__) && defined(_WIN64)
 #include <stdint.h>
 typedef __int64 mp_int_t;
 typedef unsigned __int64 mp_uint_t;
 #define MP_SSIZE_MAX __INT64_MAX__
-#elif defined ( _MSC_VER ) && defined( _WIN64 )
+#elif defined(_MSC_VER) && defined(_WIN64)
 typedef __int64 mp_int_t;
 typedef unsigned __int64 mp_uint_t;
 #else
@@ -169,15 +169,6 @@ typedef unsigned int mp_uint_t; // must be pointer size
 typedef long long mp_off_t;
 #else
 typedef long mp_off_t;
-#endif
-
-#if MICROPY_PY_OS_DUPTERM
-#define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
-void mp_hal_dupterm_tx_strn(const char *str, size_t len);
-#else
-#include <unistd.h>
-#define MP_PLAT_PRINT_STRN(str, len) do { int ret = write(1, str, len); (void)ret; } while (0)
-#define mp_hal_dupterm_tx_strn(s, l)
 #endif
 
 #define MICROPY_PORT_BUILTINS \
@@ -215,7 +206,7 @@ extern const struct _mp_obj_module_t mp_module_time;
 
 // Sanity check
 
-#if ( _MSC_VER < 1800 )
+#if (_MSC_VER < 1800)
     #error Can only build with Visual Studio 2013 toolset
 #endif
 

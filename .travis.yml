@@ -24,20 +24,17 @@ jobs:
     # check code formatting
     - stage: test
       os: linux
-      arch: arm64
       dist: bionic
       env: NAME="code formatting"
+      before_install:
+        - sudo apt-add-repository --yes --update ppa:pybricks/ppa
       install:
-        - sudo apt-get install python3-pip
-        - sudo pip3 install black
+        - sudo apt-get install uncrustify python3-pip
+        - uncrustify --version
+        - pip3 install --user black
         - black --version
       script:
-        - git clone https://github.com/uncrustify/uncrustify.git $HOME/uncrustify
-        - git -C $HOME/uncrustify checkout uncrustify-0.70.1
-        - mkdir -p $HOME/uncrustify/build
-        - (cd $HOME/uncrustify/build && cmake ..)
-        - make -C $HOME/uncrustify/build
-        - PATH=$HOME/uncrustify/build:$PATH tools/codeformat.py
+        - tools/codeformat.py
         - git diff --exit-code
 
     # stm32 port
@@ -59,13 +56,14 @@ jobs:
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF2
         - make ${MAKEOPTS} -C ports/stm32 BOARD=PYBD_SF6 NANBOX=1 MICROPY_BLUETOOTH_NIMBLE=0 MICROPY_BLUETOOTH_BTSTACK=1
         - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
-        - make ${MAKEOPTS} -C ports/stm32 BOARD=B_L072Z_LRWAN1
+        - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L073RZ
         - make ${MAKEOPTS} -C ports/stm32 BOARD=STM32L476DISC
         - make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_WB55
         - make ${MAKEOPTS} -C ports/stm32/mboot BOARD=PYBD_SF6
 
     # qemu-arm port
     - stage: test
+      dist: bionic # needed for more recent version of qemu-system-arm with mps2-an385 target
       env: NAME="qemu-arm port build and tests"
       install:
         - sudo apt-get install gcc-arm-none-eabi
@@ -77,7 +75,7 @@ jobs:
         - make ${MAKEOPTS} -C mpy-cross
         - make ${MAKEOPTS} -C ports/qemu-arm -f Makefile.test test
       after_failure:
-        - grep "FAIL" ports/qemu-arm/build/console.out
+        - grep --text "FAIL" ports/qemu-arm/build/console.out
 
     # unix coverage
     - stage: test
@@ -212,7 +210,10 @@ jobs:
         - make ${MAKEOPTS} -C ports/unix submodules
         - make ${MAKEOPTS} -C ports/unix deplibs
         - make ${MAKEOPTS} -C ports/unix
-        - make ${MAKEOPTS} -C ports/unix test
+        # OSX has poor time resolution and the following tests do not have the correct output
+        - (cd tests && ./run-tests --exclude 'uasyncio_(basic|heaplock|lock|wait_task)')
+      after_failure:
+        - (cd tests && for exp in *.exp; do testbase=$(basename $exp .exp); echo -e "\nFAILURE $testbase"; diff -u $testbase.exp $testbase.out; done)
 
     # windows port via mingw
     - stage: test

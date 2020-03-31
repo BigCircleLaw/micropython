@@ -4,7 +4,7 @@ from system import _module_info
 from public import DEVICE_TYPE
 import os
 
-VERSION = (0, 4, 4)
+VERSION = (0, 4, 5)
 
 
 __version__ = 'mPython-' + '.'.join(map(str, VERSION))
@@ -72,3 +72,5 @@ class wb_tool(object):
 
 from Event import Event
 from Pi import Pi
+
+print('wb init end.')

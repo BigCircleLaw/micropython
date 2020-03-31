@@ -35,7 +35,11 @@ MICROPY_PY_BTREE = 1
 MICROPY_VFS_FAT = 1
 MICROPY_VFS_LFS2 = 1
 
+ifdef WB
 FROZEN_MANIFEST ?= boards/manifest.py
+else
+FROZEN_MANIFEST ?= manfest_wb.py
+endif
 
 # include py core make definitions
 include $(TOP)/py/py.mk

@@ -77,7 +77,7 @@ int Utf8ToGb2312(const char* utf8, int len,u8* gbArray)
 
                   //根据这个值查表取得对应的GB2312的值
                 gbKey = SearchCodeTable(unicodeKey);
-                printf("gbKey=0x%X\n",gbKey);
+                // printf("gbKey=0x%X\n",gbKey);
                 gbArray[k++]=gbKey >> 8;
                 gbArray[k++]=gbKey & 0xFF;
                 byteCount = 3;

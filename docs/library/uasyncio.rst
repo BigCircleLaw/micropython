@@ -177,7 +177,8 @@ TCP stream connections
 .. class:: Stream()
     
     This represents a TCP stream connection.  To minimise code this class implements
-    both a reader and a writer.
+    both a reader and a writer, and both ``StreamReader`` and ``StreamWriter`` alias to
+    this class.
 
 .. method:: Stream.get_extra_info(v)
 
@@ -251,12 +252,16 @@ Event Loop
 
 .. method:: Loop.run_forever()
 
-    Run the event loop forever.
+    Run the event loop until `stop()` is called.
 
 .. method:: Loop.run_until_complete(awaitable)
 
     Run the given *awaitable* until it completes.  If *awaitable* is not a task
     then it will be promoted to one.
+
+.. method:: Loop.stop()
+
+    Stop the event loop.
 
 .. method:: Loop.close()
 

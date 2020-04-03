@@ -9,7 +9,7 @@ files_in = [
     ("bootloader", OFFSET_BOOTLOADER, sys.argv[1]),
     ("partitions", OFFSET_PARTITIONS, sys.argv[2]),
     ("application", OFFSET_APPLICATION, sys.argv[3]),
-    ("font", OFFSET_FONT, 'mPython_file/Noto_Sans_CJK_SC_Light16.xbf'),
+    ("font", OFFSET_FONT, 'mPython_font/Noto_Sans_CJK_SC_Light16.xbf'),
 ]
 file_out = sys.argv[4]
 

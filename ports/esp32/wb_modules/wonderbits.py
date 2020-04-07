@@ -4,13 +4,11 @@ from system import _module_info
 from public import DEVICE_TYPE
 import os
 
-VERSION = (0, 4, 5)
-
+VERSION = (0, 4, 6)
 
 __version__ = 'wonderbits-' + '.'.join(map(str, VERSION))
 
 state = 'main.py' not in os.listdir()
-
 
 _m_info = wb.module_manager.get_type_num_buf()
 # print(_m_info)

@@ -145,7 +145,7 @@ STATIC void esp32_servo_pwm_init_helper(esp32_servo_pwm_obj_t *self,
     }
     if (channel >= LEDC_CHANNEL_MAX) {
         if (avail == -1) {
-            mp_raise_ValueError("out of PWM channels");
+            mp_raise_ValueError(MP_ERROR_TEXT("out of PWM channels"));
         }
         channel = avail;
     }
@@ -164,7 +164,7 @@ STATIC void esp32_servo_pwm_init_helper(esp32_servo_pwm_obj_t *self,
         };
         if (ledc_channel_config(&cfg) != ESP_OK) {
             nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                "PWM not supported on pin %d", self->pin));
+                MP_ERROR_TEXT("PWM not supported on pin %d"), self->pin));
         }
         chan_gpio[channel] = self->pin;
     }
@@ -175,7 +175,7 @@ STATIC void esp32_servo_pwm_init_helper(esp32_servo_pwm_obj_t *self,
         if (tval != timer_cfg.freq_hz) {
             if (!set_freq(tval)) {
                 nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-                    "Bad frequency %d", tval));
+                    MP_ERROR_TEXT("Bad frequency %d"), tval));
             }
         }
     }
@@ -250,7 +250,7 @@ STATIC mp_obj_t esp32_servo_pwm_freq(size_t n_args, const mp_obj_t *args) {
     int tval = mp_obj_get_int(args[1]);
     if (!set_freq(tval)) {
         nlr_raise(mp_obj_new_exception_msg_varg(&mp_type_ValueError,
-            "Bad frequency %d", tval));
+            MP_ERROR_TEXT("Bad frequency %d"), tval));
     }
     return mp_const_none;
 }

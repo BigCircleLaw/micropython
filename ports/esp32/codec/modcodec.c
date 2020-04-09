@@ -269,7 +269,7 @@ STATIC mp_obj_t audio_play(mp_obj_t url)
     }
     else
     {
-        mp_raise_ValueError("no player, please init player first");
+        mp_raise_ValueError(MP_ERROR_TEXT("no player, please init player first"));
     }
     
     return mp_const_none;

@@ -241,7 +241,7 @@ void mp3_decoder_task(void *pvParameters)
     {
         free(decoder->readBuf);
         free(decoder->output);
-        mp_raise_ValueError("Memory not enough for mp3 decode");
+        mp_raise_ValueError(MP_ERROR_TEXT("Memory not enough for mp3 decode"));
         // ESP_LOGE(TAG, "Memory not enough for mp3 decode.");
 		goto abort;
     }

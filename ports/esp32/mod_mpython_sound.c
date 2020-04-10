@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-03-16 11:19:05
- * @LastEditTime: 2020-03-23 17:59:25
+ * @LastEditTime: 2020-04-09 17:32:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wb-micropython\ports\esp32\mod_mpython_sound.c
@@ -43,7 +43,7 @@ STATIC mp_obj_t sound_make_new(const mp_obj_type_t *type, size_t n_args, size_t 
     {
         return MP_OBJ_FROM_PTR(self);
     }
-    mp_raise_ValueError("Parameter Error");
+    mp_raise_ValueError(MP_ERROR_TEXT("Parameter Error"));
 }
 
 int RC_Filter(int curentData, int lastData, float A)
@@ -90,7 +90,7 @@ STATIC mp_obj_t sound_read(size_t n_args, const mp_obj_t *args)
         val = adc1_get_raw(self->adc1_id);
         if (val == -1)
         {
-            mp_raise_ValueError("Parameter Error");
+            mp_raise_ValueError(MP_ERROR_TEXT("Parameter Error"));
         }
         // printf("%d\n",val);
         record[i] = RC_Filter(val, record[i - 1], 0.8);

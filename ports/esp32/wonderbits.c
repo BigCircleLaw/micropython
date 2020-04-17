@@ -109,6 +109,34 @@ mp_obj_t wb_float_2_str(mp_obj_t data)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(wb_float_2_str_obj, wb_float_2_str);
 
+mp_obj_t wb_high_bit_1_count(mp_obj_t data)
+{
+    
+    unsigned char val = mp_obj_get_int(data);
+
+    unsigned char c = 0;
+    while(val & 0x80)
+    {
+        c += 1;
+        val <<= 1;
+    }
+
+    return MP_OBJ_NEW_SMALL_INT(c);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(wb_high_bit_1_count_obj, wb_high_bit_1_count);
+
+mp_obj_t wb_val_2_bytes(mp_obj_t data)
+{
+    unsigned char val;
+    val = mp_obj_get_int(data);
+    unsigned char str = val;
+
+    mp_obj_t result = mp_obj_new_str_copy(&mp_type_bytes, &str, 1);
+     
+    return MP_OBJ_FROM_PTR(result); //返回计算的结果
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(wb_val_2_bytes_obj, wb_val_2_bytes);
+
 extern const mp_obj_type_t wonderbits_data_format_type;
 extern const led_control_content_t mp_const_led_control_obj;
 extern const module_manager_content_t mp_const_module_manager_obj;
@@ -128,6 +156,8 @@ STATIC const mp_rom_map_elem_t wonderbits_globals_table[] = {
     {MP_OBJ_NEW_QSTR(MP_QSTR_send_a_data), MP_ROM_PTR(&module_manager_send_a_data_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_task_switch_then_back), MP_ROM_PTR(&task_switch_then_back_obj)},
     {MP_OBJ_NEW_QSTR(MP_QSTR_float_2_str), MP_ROM_PTR(&wb_float_2_str_obj)},
+    {MP_OBJ_NEW_QSTR(MP_QSTR_high_bit_1_count), MP_ROM_PTR(&wb_high_bit_1_count_obj)},
+    {MP_OBJ_NEW_QSTR(MP_QSTR_val_2_bytes), MP_ROM_PTR(&wb_val_2_bytes_obj)},
 
     {MP_OBJ_NEW_QSTR(MP_QSTR__Addr_Master), MP_ROM_INT(Addr_Master)},
     {MP_OBJ_NEW_QSTR(MP_QSTR__Addr_Broadcast), MP_ROM_INT(Addr_Broadcast)},

@@ -67,6 +67,9 @@ Additional functions
     that *timeout* seconds.  If *awaitable* is not a task then a task will be
     created from it.
 
+    If a timeout occurs, it cancels the task and raises ``asyncio.TimeoutError``:
+    this should be trapped by the caller.
+
     Returns the return value of *awaitable*.
 
     This is a coroutine.
@@ -240,6 +243,13 @@ Event Loop
 .. function:: get_event_loop()
 
     Return the event loop used to schedule and run tasks.  See `Loop`.
+
+.. function:: new_event_loop()
+
+    Reset the event loop and return it.
+
+    Note: since MicroPython only has a single event loop this function just
+    resets the loop's state, it does not create a new one.
 
 .. class:: Loop()
 

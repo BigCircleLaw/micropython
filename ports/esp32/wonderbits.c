@@ -90,13 +90,13 @@ mp_obj_t wb_float_2_str(mp_obj_t data)
     if (num_float < 0)
     {
         num_float = -num_float;
-        if ((num_float + 0.005) > 0.01)
+        if ((num_float + 0.005f) > 0.01f)
             str[j++] = '-';
     }
-    num_float = num_float + 0.005;
+    num_float = num_float + 0.005f;
     int_num = (long int)num_float;
     j += sprintf((char *)(str + j), "%ld", int_num);
-    int_num = (num_float - int_num) * 100;
+    int_num = (long int)((num_float - int_num) * 100);
     if (int_num != 0)
         j += sprintf((char *)(str + j), ".%02ld", int_num);
     

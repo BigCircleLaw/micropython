@@ -50,7 +50,6 @@ if _m_info[0] > 0:
 del wb
 del mMag
 del DEVICE_TYPE
-del state
 del _m_info
 
 

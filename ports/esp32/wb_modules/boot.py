@@ -8,8 +8,8 @@ import gc
 from public import RGB_R, RGB_B, RGB_G, RGB_LB, RGB_OFF, RGB_P, RGB_W, RGB_Y
 
 print(time.ticks_ms())
-if 'main.py' not in os.listdir():
-    exec('from wonderbits import *')
+
+from wonderbits import *
 
 print(time.ticks_ms())
 

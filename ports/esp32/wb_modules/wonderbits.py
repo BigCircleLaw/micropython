@@ -4,7 +4,7 @@ from system import _module_info
 from public import DEVICE_TYPE
 import os
 
-VERSION = (0, 4, 7)
+VERSION = (0, 4, 8)
 
 __version__ = 'wb_mPython-' + '.'.join(map(str, VERSION))
 
@@ -25,13 +25,13 @@ if _m_info[0] > 0:
             _m_value_position = _m_value_position + 1
             exec('from ' + mStr2 + ' import ' + mStr2)
             # print('from ' + mStr2 + ' import ' + mStr2)
-            # if state:
-            for j in range(_m_info[_m_value_position]):
-                s = mStr + str(j + 1)
-                exec(s + '=' + mStr2 + '(' + str(j + 1) + ')')
-                # print(mStr + str(j + 1) + '=' + mStr2 + '(' + str(j + 1) + ')')
-                print('create ' + s)
-                _module_info.append(s)
+            if state:
+                for j in range(_m_info[_m_value_position]):
+                    s = mStr + str(j + 1)
+                    exec(s + '=' + mStr2 + '(' + str(j + 1) + ')')
+                    # print(mStr + str(j + 1) + '=' + mStr2 + '(' + str(j + 1) + ')')
+                    print('create ' + s)
+                    _module_info.append(s)
 
             _m_value_position = _m_value_position + 1
         else:
@@ -50,7 +50,6 @@ if _m_info[0] > 0:
 del wb
 del mMag
 del DEVICE_TYPE
-
 del _m_info
 
 
@@ -69,6 +68,7 @@ class wb_tool(object):
 
 
 from Event import Event
+from wonderbits_cloud import Var
 from Pi import Pi
 
 print('wb init end.')

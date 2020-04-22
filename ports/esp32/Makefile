@@ -454,6 +454,8 @@ OBJ_MP += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 
 OBJ_MP += $(addprefix $(BUILD)/, $(STARTUP_SRC_C:.c=.o))
 OBJ_MP += $(addprefix $(BUILD)/, $(CODEC_SRC_C:.c=.o))
+# Only enable this for the MicroPython source: ignore warnings from esp-idf.
+$(OBJ_MP): CFLAGS += -Wdouble-promotion -Wfloat-conversion
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(EXTMOD_SRC_C) $(LIB_SRC_C) $(DRIVERS_SRC_C) $(CODEC_SRC_C)

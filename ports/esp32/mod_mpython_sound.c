@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-03-16 11:19:05
- * @LastEditTime: 2020-04-09 17:32:24
+ * @LastEditTime: 2020-04-23 09:33:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wb-micropython\ports\esp32\mod_mpython_sound.c
@@ -93,7 +93,7 @@ STATIC mp_obj_t sound_read(size_t n_args, const mp_obj_t *args)
             mp_raise_ValueError(MP_ERROR_TEXT("Parameter Error"));
         }
         // printf("%d\n",val);
-        record[i] = RC_Filter(val, record[i - 1], 0.8);
+        record[i] = RC_Filter(val, record[i - 1], 0.8f);
     }
     // printf("val=%d\n",val);
     shell_sort(record, 0,100);

@@ -4,7 +4,7 @@ from system import _module_info
 from public import DEVICE_TYPE
 import os
 
-VERSION = (0, 4, 8)
+VERSION = (0, 4, 9)
 
 __version__ = 'wb_mPython-' + '.'.join(map(str, VERSION))
 
@@ -32,7 +32,8 @@ if _m_info[0] > 0:
                     # print(mStr + str(j + 1) + '=' + mStr2 + '(' + str(j + 1) + ')')
                     print('create ' + s)
                     _module_info.append(s)
-
+                
+                del j
             _m_value_position = _m_value_position + 1
         else:
             print('not support module :', _m_info[_m_value_position], '!')
@@ -45,7 +46,6 @@ if _m_info[0] > 0:
     del i
     del mStr
     del mStr2
-    del j
 
 del wb
 del mMag
@@ -68,7 +68,7 @@ class wb_tool(object):
 
 
 from Event import Event
-from wonderbits_cloud import Var
 from Pi import Pi
+from Var import Var
 
 print('wb init end.')

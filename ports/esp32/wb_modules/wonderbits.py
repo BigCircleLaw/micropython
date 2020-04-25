@@ -68,7 +68,7 @@ class wb_tool(object):
 
 
 from Event import Event
-from wonderbits_cloud import Var
 from Pi import Pi
+from Var import Var
 
 print('wb init end.')

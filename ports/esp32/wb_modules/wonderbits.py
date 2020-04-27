@@ -6,7 +6,7 @@ import os
 
 VERSION = (0, 4, 9)
 
-__version__ = 'wb_mPython-' + '.'.join(map(str, VERSION))
+__version__ = 'wb_mPython_v2-' + '.'.join(map(str, VERSION))
 
 state = 'main.py' not in os.listdir()
 

@@ -4,7 +4,7 @@ from system import _module_info
 from public import DEVICE_TYPE
 import os
 
-VERSION = (0, 4, 9)
+VERSION = (0, 5, 0)
 
 __version__ = 'wb_mPython_v2-' + '.'.join(map(str, VERSION))
 

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-03-16 11:19:05
- * @LastEditTime: 2020-04-23 09:33:44
+ * @LastEditTime: 2020-04-28 18:14:21
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \wb-micropython\ports\esp32\mod_mpython_sound.c
@@ -84,7 +84,10 @@ STATIC mp_obj_t sound_read(size_t n_args, const mp_obj_t *args)
     sound_obj_t *self = args[0];
     int val;
     int record[100];
+    int delay = 20;
     record[0] = adc1_get_raw(self->adc1_id);
+    if (n_args > 3)
+        delay = MP_OBJ_SMALL_INT_VALUE(args[3]);
     for (unsigned char i = 1; i < 100; i++)
     {
         val = adc1_get_raw(self->adc1_id);
@@ -93,7 +96,8 @@ STATIC mp_obj_t sound_read(size_t n_args, const mp_obj_t *args)
             mp_raise_ValueError(MP_ERROR_TEXT("Parameter Error"));
         }
         // printf("%d\n",val);
-        record[i] = RC_Filter(val, record[i - 1], 0.8f);
+        record[i] = RC_Filter(val, record[i - 1], 0.4f);
+        mp_hal_delay_us(delay);
     }
     // printf("val=%d\n",val);
     shell_sort(record, 0,100);
@@ -102,18 +106,18 @@ STATIC mp_obj_t sound_read(size_t n_args, const mp_obj_t *args)
         int min = MP_OBJ_SMALL_INT_VALUE(args[1]);
         int max = MP_OBJ_SMALL_INT_VALUE(args[2]);
         val = record[max] - record[min];
-        if(n_args > 3)
+        if(n_args > 4)
             for (unsigned char i = 1; i < 100; i++)
                 printf("%d\n",record[i]);
     }
     else
     {
-        val = record[80] - record[20] - 20;
+        val = (record[90] - record[10]) / 2;
     }
     
     return MP_OBJ_NEW_SMALL_INT(val);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(sound_read_obj, 1, 4, sound_read);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(sound_read_obj, 1, 5, sound_read);
 
 STATIC const mp_rom_map_elem_t sound_locals_dict_table[] = {
 
